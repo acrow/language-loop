@@ -5,12 +5,12 @@ class PlaylistManager {
         this.currentSentences = [];
     }
 
-    async createPlaylist(name) {
+    async createPlaylist(name, targetLang, nativeLang, icon = '📚', description = '') {
         if (!name || name.trim() === '') {
             throw new Error('Playlist name cannot be empty');
         }
 
-        const id = await storage.createPlaylist(name.trim());
+        const id = await storage.createPlaylist(name.trim(), targetLang, nativeLang, icon, description);
         return id;
     }
 
@@ -30,6 +30,10 @@ class PlaylistManager {
         await storage.updatePlaylist(id, { name: newName.trim() });
     }
 
+    async updatePlaylist(id, updates) {
+        await storage.updatePlaylist(id, updates);
+    }
+
     async deletePlaylist(id) {
         await storage.deletePlaylist(id);
 
@@ -43,6 +47,18 @@ class PlaylistManager {
     async loadPlaylist(id) {
         this.currentPlaylistId = id;
         this.currentSentences = await storage.getSentencesByPlaylist(id);
+
+        // Load playlist and apply its settings to audio engine
+        const playlist = await storage.getPlaylist(id);
+        if (playlist && playlist.settings) {
+            audioEngine.setPlaybackSettings(
+                playlist.settings.repeatCount,
+                playlist.settings.pauseDuration
+            );
+            audioEngine.speechRate = playlist.settings.speechRate;
+            audioEngine.preferredVoiceName = playlist.settings.preferredVoice;
+            audioEngine.speakNativeLanguage = playlist.settings.speakNative;
+        }
 
         // Update last played timestamp
         await storage.updatePlaylist(id, { lastPlayedAt: Date.now() });

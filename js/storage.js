@@ -47,13 +47,22 @@ class StorageManager {
     }
 
     // Playlist Operations
-    async createPlaylist(name, targetLang = 'en-US', nativeLang = 'zh-CN') {
+    async createPlaylist(name, targetLang = 'en-US', nativeLang = 'zh-CN', icon = '📚', description = '') {
         const playlist = {
             name,
+            icon,
+            description,
             targetLang,
             nativeLang,
             createdAt: Date.now(),
-            lastPlayedAt: null
+            lastPlayedAt: null,
+            settings: {
+                repeatCount: 2,
+                pauseDuration: 1,
+                speechRate: 1.0,
+                preferredVoice: '',
+                speakNative: false
+            }
         };
 
         return new Promise((resolve, reject) => {
@@ -137,7 +146,8 @@ class StorageManager {
 
             request.onsuccess = () => {
                 const sentences = request.result;
-                sentences.sort((a, b) => a.order - b.order);
+                // Sort by ID descending (newest first)
+                sentences.sort((a, b) => b.id - a.id);
                 resolve(sentences);
             };
             request.onerror = () => reject(request.error);
@@ -280,6 +290,26 @@ class StorageManager {
 
     base64ToBlob(base64) {
         return fetch(base64).then(res => res.blob());
+    }
+
+    // Migration: Ensure all playlists have settings
+    async migratePlaylistSettings() {
+        const playlists = await this.getAllPlaylists();
+        const defaultSettings = {
+            repeatCount: 2,
+            pauseDuration: 1,
+            speechRate: 1.0,
+            preferredVoice: '',
+            speakNative: false
+        };
+
+        for (const playlist of playlists) {
+            if (!playlist.settings) {
+                await this.updatePlaylist(playlist.id, {
+                    settings: defaultSettings
+                });
+            }
+        }
     }
 }
 

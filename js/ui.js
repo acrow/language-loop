@@ -5,6 +5,7 @@ class UIManager {
         this.editingSentenceId = null;
         this.recordedAudio = null;
         this.isRecording = false;
+        this.isVoiceInput = false;
     }
 
     init() {
@@ -21,6 +22,10 @@ class UIManager {
         // Library view
         document.getElementById('add-playlist-btn')?.addEventListener('click', () => {
             this.showCreatePlaylistModal();
+        });
+
+        document.getElementById('language-settings-btn')?.addEventListener('click', () => {
+            this.showWelcomeView();
         });
 
         // Player view
@@ -81,6 +86,11 @@ class UIManager {
             this.autoTranslate();
         });
 
+        // Voice input
+        document.getElementById('voice-input-btn')?.addEventListener('click', () => {
+            this.toggleVoiceInput();
+        });
+
         // Settings modal
         document.getElementById('settings-btn')?.addEventListener('click', () => {
             this.hideModal('playlist-menu-modal');
@@ -96,7 +106,22 @@ class UIManager {
             this.saveSettings();
         });
 
+        // Test buttons
+        document.getElementById('writing-test-btn')?.addEventListener('click', () => {
+            this.hideModal('playlist-menu-modal');
+            this.startTest('writing');
+        });
+
+        document.getElementById('speaking-test-btn')?.addEventListener('click', () => {
+            this.hideModal('playlist-menu-modal');
+            this.startTest('speaking');
+        });
+
         // Playlist menu
+        document.getElementById('edit-playlist-btn')?.addEventListener('click', () => {
+            this.showEditPlaylistModal();
+        });
+
         document.getElementById('rename-playlist-btn')?.addEventListener('click', () => {
             this.renamePlaylist();
         });
@@ -134,6 +159,77 @@ class UIManager {
         document.getElementById('playlist-create-form')?.addEventListener('submit', (e) => {
             e.preventDefault();
             this.createPlaylist();
+        });
+
+        // Edit playlist modal
+        document.getElementById('close-edit-playlist-btn')?.addEventListener('click', () => {
+            this.hideModal('edit-playlist-modal');
+        });
+
+        document.getElementById('cancel-edit-playlist-btn')?.addEventListener('click', () => {
+            this.hideModal('edit-playlist-modal');
+        });
+
+        document.getElementById('edit-playlist-form')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.savePlaylistMetadata();
+        });
+
+        // Icon picker
+        document.querySelectorAll('.icon-option').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.icon-option').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                document.getElementById('edit-playlist-icon').value = btn.dataset.icon;
+            });
+        });
+
+        // Test view
+        document.getElementById('back-from-test-btn')?.addEventListener('click', () => {
+            this.showPlayerView(playlistManager.currentPlaylistId);
+        });
+
+        document.getElementById('submit-answer-btn')?.addEventListener('click', () => {
+            this.submitAnswer();
+        });
+
+        document.getElementById('speak-answer-btn')?.addEventListener('click', () => {
+            this.toggleSpeakAnswer();
+        });
+
+        document.getElementById('next-test-btn')?.addEventListener('click', () => {
+            this.nextTestQuestion();
+        });
+
+        document.getElementById('retry-test-btn')?.addEventListener('click', () => {
+            this.retryTest();
+        });
+
+        document.getElementById('back-to-player-btn')?.addEventListener('click', () => {
+            this.showPlayerView(playlistManager.currentPlaylistId);
+        });
+
+        // Test answer input - submit on Enter
+        document.getElementById('test-answer-input')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                this.submitAnswer();
+            }
+        });
+
+        // Global Enter key handler for test view
+        document.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && this.currentView === 'test') {
+                const feedbackEl = document.getElementById('test-feedback');
+                const nextBtn = document.getElementById('next-test-btn');
+                const answerInput = document.getElementById('test-answer-input');
+
+                // If feedback is visible and input is not focused, trigger the next/try again button
+                if (feedbackEl && !feedbackEl.classList.contains('hidden') && document.activeElement !== answerInput) {
+                    e.preventDefault();
+                    nextBtn.click();
+                }
+            }
         });
     }
 
@@ -182,6 +278,11 @@ class UIManager {
 
         if (sentences.length > 0) {
             this.updateCurrentSentence(0);
+        } else {
+            // Clear the current sentence display when playlist is empty
+            document.getElementById('current-target-text').textContent = 'Select a sentence to play';
+            document.getElementById('current-native-text').textContent = '';
+            document.getElementById('current-position').textContent = '0';
         }
     }
 
@@ -200,6 +301,9 @@ class UIManager {
         emptyState.classList.add('hidden');
         container.innerHTML = '';
 
+        // Sort playlists by creation date (newest first)
+        playlists.sort((a, b) => b.createdAt - a.createdAt);
+
         for (const playlist of playlists) {
             const count = await playlistManager.getSentenceCount(playlist.id);
             const card = this.createPlaylistCard(playlist, count);
@@ -210,10 +314,30 @@ class UIManager {
     createPlaylistCard(playlist, sentenceCount) {
         const card = document.createElement('div');
         card.className = 'playlist-card';
+
+        // Get language display names
+        const langNames = {
+            'en-US': 'English',
+            'zh-CN': 'Chinese',
+            'ja-JP': 'Japanese',
+            'es-ES': 'Spanish',
+            'fr-FR': 'French',
+            'de-DE': 'German'
+        };
+
+        const targetLangName = langNames[playlist.targetLang] || playlist.targetLang;
+        const icon = playlist.icon || '📚';
+        const description = playlist.description || '';
+
         card.innerHTML = `
-            <h3>${this.escapeHtml(playlist.name)}</h3>
-            <div class="playlist-meta">
-                ${sentenceCount} sentence${sentenceCount !== 1 ? 's' : ''}
+            <div class="playlist-icon">${this.escapeHtml(icon)}</div>
+            <div class="playlist-info">
+                <h3>${this.escapeHtml(playlist.name)}</h3>
+                ${description ? `<p class="playlist-description">${this.escapeHtml(description)}</p>` : ''}
+                <div class="playlist-meta">
+                    <span class="language-badge">Target: ${targetLangName}</span>
+                    <span class="sentence-count">${sentenceCount} sentence${sentenceCount !== 1 ? 's' : ''}</span>
+                </div>
             </div>
         `;
 
@@ -251,17 +375,52 @@ class UIManager {
         item.className = 'sentence-item';
         item.dataset.sentenceId = sentence.id;
         item.dataset.index = index;
+        item.draggable = true;
 
         item.innerHTML = `
-            <div class="sentence-target">${this.escapeHtml(sentence.targetText)}</div>
-            <div class="sentence-native">${this.escapeHtml(sentence.nativeText)}</div>
+            <div class="drag-handle">⋮⋮</div>
+            <div class="sentence-content">
+                <div class="sentence-target">${this.escapeHtml(sentence.targetText)}</div>
+                <div class="sentence-native">${this.escapeHtml(sentence.nativeText)}</div>
+            </div>
             <div class="sentence-actions">
                 <button class="btn edit-sentence-btn">Edit</button>
                 <button class="btn danger delete-sentence-btn">Delete</button>
             </div>
         `;
 
-        item.addEventListener('click', (e) => {
+        // Drag and drop events
+        item.addEventListener('dragstart', (e) => {
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', item.innerHTML);
+            item.classList.add('dragging');
+        });
+
+        item.addEventListener('dragend', () => {
+            item.classList.remove('dragging');
+        });
+
+        item.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            const draggingItem = document.querySelector('.dragging');
+            if (draggingItem && draggingItem !== item) {
+                const container = item.parentElement;
+                const afterElement = this.getDragAfterElement(container, e.clientY);
+                if (afterElement == null) {
+                    container.appendChild(draggingItem);
+                } else {
+                    container.insertBefore(draggingItem, afterElement);
+                }
+            }
+        });
+
+        item.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            await this.saveNewOrder();
+        });
+
+        // Click to play
+        item.querySelector('.sentence-content').addEventListener('click', (e) => {
             if (!e.target.classList.contains('btn')) {
                 audioEngine.jumpToSentence(index);
                 if (!audioEngine.isPlaying) {
@@ -303,7 +462,7 @@ class UIManager {
             if (audioEngine.isPlaying) {
                 currentItem.classList.add('playing');
             }
-            currentItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            // Removed scrollIntoView to prevent auto-scrolling
         }
     }
 
@@ -318,6 +477,37 @@ class UIManager {
         }
     }
 
+    getDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll('.sentence-item:not(.dragging)')];
+
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child };
+            } else {
+                return closest;
+            }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
+    async saveNewOrder() {
+        const items = document.querySelectorAll('.sentence-item');
+        const newOrder = Array.from(items).map(item => parseInt(item.dataset.sentenceId));
+
+        // Update order in playlistManager.currentSentences
+        const reorderedSentences = newOrder.map(id =>
+            playlistManager.currentSentences.find(s => s.id === id)
+        ).filter(Boolean);
+
+        playlistManager.currentSentences = reorderedSentences;
+        audioEngine.loadPlaylist(reorderedSentences);
+
+        // Re-render to update indices
+        await this.renderSentences(reorderedSentences);
+    }
+
     togglePlayPause() {
         if (audioEngine.isPlaying) {
             audioEngine.pause();
@@ -327,10 +517,14 @@ class UIManager {
     }
 
     // Playlist Actions
-    showCreatePlaylistModal() {
+    async showCreatePlaylistModal() {
         document.getElementById('playlist-name-input').value = '';
-        document.getElementById('playlist-target-lang').value = 'en-US';
-        document.getElementById('playlist-native-lang').value = 'zh-CN';
+
+        // Load global language settings as defaults
+        const { targetLang, nativeLang } = await welcomeManager.getGlobalLanguages();
+        document.getElementById('playlist-target-lang').value = targetLang;
+        document.getElementById('playlist-native-lang').value = nativeLang;
+
         this.showModal('create-playlist-modal');
     }
 
@@ -338,6 +532,8 @@ class UIManager {
         const name = document.getElementById('playlist-name-input').value.trim();
         const targetLang = document.getElementById('playlist-target-lang').value;
         const nativeLang = document.getElementById('playlist-native-lang').value;
+        const icon = document.getElementById('playlist-icon').value.trim() || '📚';
+        const description = document.getElementById('playlist-description').value.trim();
 
         if (!name) {
             alert('Please enter a playlist name');
@@ -345,12 +541,62 @@ class UIManager {
         }
 
         try {
-            const id = await playlistManager.createPlaylist(name, targetLang, nativeLang);
+            const id = await playlistManager.createPlaylist(name, targetLang, nativeLang, icon, description);
             this.hideModal('create-playlist-modal');
             await this.renderPlaylists();
             this.showPlayerView(id);
         } catch (error) {
             alert('Error creating playlist: ' + error.message);
+        }
+    }
+
+    async showEditPlaylistModal() {
+        this.hideModal('playlist-menu-modal');
+
+        const playlist = await playlistManager.getPlaylist(playlistManager.currentPlaylistId);
+
+        // Set current values
+        document.getElementById('edit-playlist-name').value = playlist.name || '';
+        document.getElementById('edit-playlist-icon').value = playlist.icon || '📚';
+        document.getElementById('edit-playlist-description').value = playlist.description || '';
+
+        // Highlight selected icon
+        document.querySelectorAll('.icon-option').forEach(btn => {
+            btn.classList.remove('selected');
+            if (btn.dataset.icon === (playlist.icon || '📚')) {
+                btn.classList.add('selected');
+            }
+        });
+
+        this.showModal('edit-playlist-modal');
+    }
+
+    async savePlaylistMetadata() {
+        const name = document.getElementById('edit-playlist-name').value.trim();
+        const icon = document.getElementById('edit-playlist-icon').value.trim() || '📚';
+        const description = document.getElementById('edit-playlist-description').value.trim();
+
+        if (!name) {
+            alert('Please enter a playlist name');
+            return;
+        }
+
+        try {
+            await playlistManager.updatePlaylist(playlistManager.currentPlaylistId, {
+                name,
+                icon,
+                description
+            });
+
+            this.hideModal('edit-playlist-modal');
+
+            // Refresh display
+            await this.renderPlaylists();
+            await this.showPlayerView(playlistManager.currentPlaylistId);
+
+            alert('Playlist updated successfully!');
+        } catch (error) {
+            alert('Error updating playlist: ' + error.message);
         }
     }
 
@@ -446,6 +692,7 @@ class UIManager {
     async saveSentence() {
         const targetText = document.getElementById('target-text-input').value.trim();
         const nativeText = document.getElementById('native-text-input').value.trim();
+        const addAnother = document.getElementById('add-another-checkbox').checked;
 
         if (!targetText || !nativeText) {
             alert('Please fill in both sentences');
@@ -465,11 +712,20 @@ class UIManager {
                 await playlistManager.addSentence(playlistManager.currentPlaylistId, sentenceData);
             }
 
-            this.hideModal('editor-modal');
-
             // Reload sentences
             audioEngine.loadPlaylist(playlistManager.currentSentences);
             await this.renderSentences(playlistManager.currentSentences);
+
+            // If 'Add Another' is checked and we're adding (not editing), clear form and keep open
+            if (addAnother && !this.editingSentenceId) {
+                document.getElementById('target-text-input').value = '';
+                document.getElementById('native-text-input').value = '';
+                this.recordedAudio = null;
+                this.updateRecordingUI();
+                document.getElementById('target-text-input').focus();
+            } else {
+                this.hideModal('editor-modal');
+            }
         } catch (error) {
             alert('Error saving sentence: ' + error.message);
         }
@@ -586,28 +842,185 @@ class UIManager {
         }
     }
 
+    // Voice Input
+    async toggleVoiceInput() {
+        if (this.isVoiceInput) {
+            // Stop voice input
+            audioEngine.stopSpeechRecognition();
+            this.isVoiceInput = false;
+            this.updateVoiceInputUI();
+            return;
+        }
+
+        const playlist = await playlistManager.getPlaylist(playlistManager.currentPlaylistId);
+        if (!playlist) {
+            alert('Error: Could not load playlist information');
+            return;
+        }
+
+        // Show loading state
+        const btn = document.getElementById('voice-input-btn');
+        const status = document.getElementById('voice-input-status');
+        btn.textContent = '⏹️ Stop';
+        btn.disabled = false;
+        status.textContent = 'Listening...';
+        status.classList.add('recording');
+        this.isVoiceInput = true;
+
+        // Start speech recognition with recording
+        const success = await audioEngine.startSpeechRecognition(
+            playlist.targetLang,
+            (transcript, isFinal) => {
+                // Update text field with transcript
+                document.getElementById('target-text-input').value = transcript;
+                if (isFinal) {
+                    status.textContent = 'Processing...';
+                }
+            },
+            (audioBlob) => {
+                // Save the recorded audio
+                this.recordedAudio = audioBlob;
+                this.isVoiceInput = false;
+                this.updateVoiceInputUI();
+                this.updateRecordingUI();
+
+                // Auto-translate if text was captured
+                const targetText = document.getElementById('target-text-input').value.trim();
+                if (targetText) {
+                    this.autoTranslate();
+                }
+            }
+        );
+
+        if (!success) {
+            this.isVoiceInput = false;
+            this.updateVoiceInputUI();
+        }
+    }
+
+    updateVoiceInputUI() {
+        const btn = document.getElementById('voice-input-btn');
+        const status = document.getElementById('voice-input-status');
+
+        if (this.isVoiceInput) {
+            btn.textContent = '⏹️ Stop';
+            status.textContent = 'Listening...';
+            status.classList.add('recording');
+        } else {
+            btn.textContent = '🎤 Voice Input';
+            status.textContent = '';
+            status.classList.remove('recording');
+        }
+    }
+
     // Settings
     async showSettings() {
-        const repeatCount = await storage.getSetting('repeatCount', 2);
-        const pauseDuration = await storage.getSetting('pauseDuration', 1);
+        // Get current playlist settings
+        const playlist = await playlistManager.getPlaylist(playlistManager.currentPlaylistId);
+        if (!playlist) {
+            alert('Please open a playlist first');
+            return;
+        }
 
-        document.getElementById('repeat-count-input').value = repeatCount;
-        document.getElementById('pause-duration-input').value = pauseDuration;
+        const settings = playlist.settings || {
+            repeatCount: 2,
+            pauseDuration: 1,
+            speechRate: 1.0,
+            preferredVoice: '',
+            speakNative: false
+        };
 
+        // Sleep timer remains global
+        const sleepTimer = await storage.getSetting('sleepTimer', 0);
+
+        document.getElementById('repeat-count-input').value = settings.repeatCount;
+        document.getElementById('pause-duration-input').value = settings.pauseDuration;
+        document.getElementById('sleep-timer-select').value = sleepTimer;
+        document.getElementById('speech-rate-input').value = settings.speechRate;
+        document.getElementById('speech-rate-value').textContent = settings.speechRate.toFixed(1);
+        document.getElementById('speak-native-checkbox').checked = settings.speakNative;
+
+        // Populate voice selector
+        this.populateVoiceSelector(settings.preferredVoice);
+
+        // Add event listener for real-time value display
+        const rateInput = document.getElementById('speech-rate-input');
+        rateInput.oninput = (e) => {
+            document.getElementById('speech-rate-value').textContent = parseFloat(e.target.value).toFixed(1);
+        };
+
+        this.updateSleepTimerStatus();
         this.showModal('settings-modal');
+    }
+
+    populateVoiceSelector(selectedVoice) {
+        const select = document.getElementById('voice-select');
+        select.innerHTML = '<option value="">Auto (System Default)</option>';
+
+        const voices = audioEngine.voices;
+        voices.forEach(voice => {
+            const option = document.createElement('option');
+            option.value = voice.name;
+            option.textContent = `${voice.name} (${voice.lang})`;
+            if (voice.name === selectedVoice) {
+                option.selected = true;
+            }
+            select.appendChild(option);
+        });
     }
 
     async saveSettings() {
         const repeatCount = parseInt(document.getElementById('repeat-count-input').value);
         const pauseDuration = parseFloat(document.getElementById('pause-duration-input').value);
+        const sleepTimer = parseInt(document.getElementById('sleep-timer-select').value);
+        const speechRate = parseFloat(document.getElementById('speech-rate-input').value);
+        const preferredVoice = document.getElementById('voice-select').value;
+        const speakNative = document.getElementById('speak-native-checkbox').checked;
 
-        await storage.setSetting('repeatCount', repeatCount);
-        await storage.setSetting('pauseDuration', pauseDuration);
+        // Save playlist-specific settings
+        const playlist = await playlistManager.getPlaylist(playlistManager.currentPlaylistId);
+        if (playlist) {
+            await storage.updatePlaylist(playlistManager.currentPlaylistId, {
+                settings: {
+                    repeatCount,
+                    pauseDuration,
+                    speechRate,
+                    preferredVoice,
+                    speakNative
+                }
+            });
 
-        audioEngine.setPlaybackSettings(repeatCount, pauseDuration);
+            // Apply settings to audio engine immediately
+            audioEngine.setPlaybackSettings(repeatCount, pauseDuration);
+            audioEngine.speechRate = speechRate;
+            audioEngine.preferredVoiceName = preferredVoice;
+            audioEngine.speakNativeLanguage = speakNative;
+        }
 
+        // Sleep timer remains global
+        await storage.setSetting('sleepTimer', sleepTimer);
+        if (sleepTimer > 0) {
+            audioEngine.setSleepTimer(sleepTimer);
+        } else {
+            audioEngine.clearSleepTimer();
+        }
+
+        this.updateSleepTimerStatus();
         this.hideModal('settings-modal');
-        alert('Settings saved!');
+        alert('Settings saved for this playlist!');
+    }
+
+    updateSleepTimerStatus() {
+        const remaining = audioEngine.getSleepTimerRemaining();
+        const statusEl = document.getElementById('sleep-timer-status');
+
+        if (remaining > 0) {
+            statusEl.textContent = `Timer active: ${remaining} minutes remaining`;
+            statusEl.style.color = 'var(--accent)';
+        } else {
+            statusEl.textContent = 'Timer not set';
+            statusEl.style.color = '';
+        }
     }
 
     // Modal Management
@@ -628,6 +1041,207 @@ class UIManager {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+
+    // Test Functionality
+    async startTest(mode) {
+        const success = await testManager.startTest(playlistManager.currentPlaylistId, mode);
+        if (!success) return;
+
+        this.showTestView(mode);
+        this.displayTestQuestion();
+    }
+
+    showTestView(mode) {
+        // Hide all views
+        document.getElementById('welcome-view').classList.add('hidden');
+        document.getElementById('library-view').classList.add('hidden');
+        document.getElementById('player-view').classList.add('hidden');
+        document.getElementById('test-view').classList.remove('hidden');
+        this.currentView = 'test';
+
+        // Update title
+        document.getElementById('test-mode-title').textContent =
+            mode === 'writing' ? 'Writing Test' : 'Speaking Test';
+
+        // Show appropriate input area
+        if (mode === 'writing') {
+            document.getElementById('writing-test-input').classList.remove('hidden');
+            document.getElementById('speaking-test-input').classList.add('hidden');
+        } else {
+            document.getElementById('writing-test-input').classList.add('hidden');
+            document.getElementById('speaking-test-input').classList.remove('hidden');
+        }
+
+        // Hide feedback and complete screens
+        document.getElementById('test-feedback').classList.add('hidden');
+        document.getElementById('test-complete').classList.add('hidden');
+        document.getElementById('test-input-area').classList.remove('hidden');
+    }
+
+    displayTestQuestion() {
+        const sentence = testManager.getCurrentSentence();
+        const progress = testManager.getProgress();
+
+        // Update progress
+        document.getElementById('test-current').textContent = progress.current;
+        document.getElementById('test-total').textContent = progress.total;
+        document.getElementById('test-correct').textContent = progress.correct;
+        document.getElementById('test-attempted').textContent = progress.attempted;
+
+        // Display native language as prompt
+        document.getElementById('test-prompt-text').textContent = sentence.nativeText;
+
+        // Clear input
+        document.getElementById('test-answer-input').value = '';
+        document.getElementById('recognized-text').classList.add('hidden');
+        document.getElementById('recognized-text').textContent = '';
+    }
+
+    async submitAnswer() {
+        const userAnswer = document.getElementById('test-answer-input').value.trim();
+
+        if (!userAnswer) {
+            alert('Please enter your answer');
+            return;
+        }
+
+        const result = await testManager.checkAnswer(userAnswer);
+        this.showFeedback(result);
+    }
+
+    async toggleSpeakAnswer() {
+        const btn = document.getElementById('speak-answer-btn');
+        const status = document.getElementById('speaking-status');
+
+        if (testManager.isListening) {
+            // Stop listening
+            testManager.stopSpeechRecognition();
+            testManager.isListening = false;
+            btn.textContent = '🎤 Speak Answer';
+            status.textContent = '';
+            status.classList.remove('recording');
+            return;
+        }
+
+        // Start listening
+        testManager.isListening = true;
+        btn.textContent = '⏹️ Stop';
+        status.textContent = 'Listening...';
+        status.classList.add('recording');
+
+        // Clear previous recognized text
+        const recognizedTextEl = document.getElementById('recognized-text');
+        recognizedTextEl.textContent = '';
+        recognizedTextEl.classList.add('hidden');
+
+        try {
+            const transcript = await testManager.startSpeechRecognition();
+            testManager.isListening = false;
+            btn.textContent = '🎤 Speak Answer';
+            status.textContent = '';
+            status.classList.remove('recording');
+
+            if (transcript) {
+                const result = await testManager.checkAnswer(transcript);
+                this.showFeedback(result);
+            }
+        } catch (error) {
+            console.error('Speech recognition error:', error);
+            testManager.isListening = false;
+            btn.textContent = '🎤 Speak Answer';
+            status.textContent = '';
+            status.classList.remove('recording');
+        }
+    }
+
+    showFeedback(result) {
+        // Hide input area
+        document.getElementById('test-input-area').classList.add('hidden');
+
+        // Show feedback
+        const feedbackEl = document.getElementById('test-feedback');
+        feedbackEl.classList.remove('hidden');
+
+        const messageEl = document.getElementById('feedback-message');
+        const comparisonEl = document.getElementById('feedback-comparison');
+        const nextBtn = document.getElementById('next-test-btn');
+
+        if (result.isCorrect) {
+            messageEl.textContent = '✅ Correct!';
+            messageEl.className = 'feedback-message correct';
+            comparisonEl.innerHTML = `<div style="color: var(--success); font-size: 1.25rem;">${this.escapeHtml(result.userAnswer)}</div>`;
+            nextBtn.textContent = 'Next Sentence';
+            nextBtn.style.display = 'inline-block';
+        } else {
+            messageEl.textContent = `❌ Not quite (${result.similarity}% match)`;
+            messageEl.className = 'feedback-message incorrect';
+            comparisonEl.innerHTML = `
+                <div style="color: var(--danger); font-size: 1.25rem; margin-bottom: 0.5rem;">${this.escapeHtml(result.userAnswer)}</div>
+                <div style="color: var(--success); font-size: 1.25rem;">${this.escapeHtml(result.correctAnswer)}</div>
+            `;
+            nextBtn.textContent = 'Try Again';
+            nextBtn.style.display = 'inline-block';
+        }
+    }
+
+    nextTestQuestion() {
+        const nextBtn = document.getElementById('next-test-btn');
+
+        // Clear recognized text before showing input again
+        const recognizedTextEl = document.getElementById('recognized-text');
+        recognizedTextEl.textContent = '';
+        recognizedTextEl.classList.add('hidden');
+
+        // Only advance if the button says "Next Sentence" (meaning answer was correct)
+        if (nextBtn.textContent === 'Try Again') {
+            // Hide feedback, show input again for retry
+            document.getElementById('test-feedback').classList.add('hidden');
+            document.getElementById('test-input-area').classList.remove('hidden');
+
+            // Auto-focus the input box for writing test
+            if (testManager.testMode === 'writing') {
+                document.getElementById('test-answer-input').focus();
+            }
+            return;
+        }
+
+        // Answer was correct, move to next sentence
+        testManager.nextSentence();
+
+        if (testManager.isComplete()) {
+            this.showTestComplete();
+        } else {
+            // Hide feedback, show input
+            document.getElementById('test-feedback').classList.add('hidden');
+            document.getElementById('test-input-area').classList.remove('hidden');
+            this.displayTestQuestion();
+
+            // Auto-focus the input box for writing test
+            if (testManager.testMode === 'writing') {
+                document.getElementById('test-answer-input').focus();
+            }
+        }
+    }
+
+    showTestComplete() {
+        const progress = testManager.getProgress();
+
+        // Hide input and feedback
+        document.getElementById('test-input-area').classList.add('hidden');
+        document.getElementById('test-feedback').classList.add('hidden');
+
+        // Show complete screen
+        const completeEl = document.getElementById('test-complete');
+        completeEl.classList.remove('hidden');
+
+        document.getElementById('final-score').textContent = progress.correct;
+        document.getElementById('final-total').textContent = progress.total;
+        document.getElementById('final-percentage').textContent = progress.percentage;
+    }
+
+    retryTest() {
+        this.startTest(testManager.testMode);
     }
 }
 

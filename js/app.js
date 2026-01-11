@@ -11,13 +11,14 @@ class App {
             // Initialize storage
             await storage.init();
 
-            // Load settings
-            const repeatCount = await storage.getSetting('repeatCount', 2);
-            const pauseDuration = await storage.getSetting('pauseDuration', 1);
-            audioEngine.setPlaybackSettings(repeatCount, pauseDuration);
+            // Migrate existing playlists to have settings
+            await storage.migratePlaylistSettings();
 
             // Initialize UI
             ui.init();
+
+            // Initialize welcome manager
+            await welcomeManager.init();
 
             // Check for existing data and restore session
             await this.restoreSession();

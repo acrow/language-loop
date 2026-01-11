@@ -58,8 +58,20 @@ class TranslationService {
         } catch (error) {
             console.error('Translation error:', error);
 
+            // Provide language-specific error messages
+            const langNames = {
+                'en': 'English',
+                'en-US': 'English',
+                'zh-CN': 'Chinese',
+                'ja': 'Japanese',
+                'ja-JP': 'Japanese'
+            };
+
+            const sourceName = langNames[sourceLang] || langNames[this.mapLanguageCode(sourceLang)] || sourceLang;
+            const targetName = langNames[targetLang] || langNames[this.mapLanguageCode(targetLang)] || targetLang;
+
             // Return a helpful message if translation fails
-            return `[Translation unavailable - please enter manually]`;
+            return `[Translation from ${sourceName} to ${targetName} unavailable - please enter manually]`;
         }
     }
 

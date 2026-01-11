@@ -24,24 +24,44 @@
         <div id="welcome-view" class="view hidden">
             <div class="welcome-container">
                 <div class="welcome-icon">🎵</div>
-                <h1>Welcome to Language Loop</h1>
-                <p class="welcome-subtitle">Learn languages through audio repetition</p>
+                <h1 id="welcome-title">Welcome to Language Loop</h1>
+                <p class="welcome-subtitle" id="welcome-subtitle">Learn languages through audio repetition</p>
 
                 <div class="welcome-steps">
                     <div class="step">
                         <div class="step-icon">📝</div>
-                        <h3>Create Playlists</h3>
-                        <p>Organize your sentences into playlists, just like music</p>
+                        <h3 id="step1-title">Create Playlists</h3>
+                        <p id="step1-desc">Organize your sentences into playlists, just like music</p>
                     </div>
                     <div class="step">
                         <div class="step-icon">🔊</div>
-                        <h3>Auto Voice Generation</h3>
-                        <p>Sentences are spoken automatically in your target language</p>
+                        <h3 id="step2-title">Auto Voice Generation</h3>
+                        <p id="step2-desc">Sentences are spoken automatically in your target language</p>
                     </div>
                     <div class="step">
                         <div class="step-icon">🔁</div>
-                        <h3>Repeat & Learn</h3>
-                        <p>Configure repetitions and practice continuously</p>
+                        <h3 id="step3-title">Repeat & Learn</h3>
+                        <p id="step3-desc">Configure repetitions and practice continuously</p>
+                    </div>
+                </div>
+
+                <div class="welcome-config">
+                    <h3>Language Settings</h3>
+                    <div class="form-group">
+                        <label for="global-target-lang">Target Language (Learning)</label>
+                        <select id="global-target-lang">
+                            <option value="en-US">English</option>
+                            <option value="zh-CN">Chinese</option>
+                            <option value="ja-JP">Japanese</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="global-native-lang">Native Language</label>
+                        <select id="global-native-lang">
+                            <option value="en-US">English</option>
+                            <option value="zh-CN">Chinese</option>
+                            <option value="ja-JP">Japanese</option>
+                        </select>
                     </div>
                 </div>
 
@@ -52,6 +72,7 @@
         <!-- Playlist Library View -->
         <div id="library-view" class="view hidden">
             <header class="app-header">
+                <button id="language-settings-btn" class="btn btn-icon" title="Language Settings">🌐</button>
                 <h1>📚 My Playlists</h1>
                 <button id="add-playlist-btn" class="btn btn-icon" title="Create Playlist">+</button>
             </header>
@@ -111,6 +132,62 @@
             </div>
         </div>
 
+        <!-- Test View -->
+        <div id="test-view" class="view hidden">
+            <header class="app-header">
+                <button id="back-from-test-btn" class="btn btn-icon" title="Back">←</button>
+                <h1 id="test-mode-title">Writing Test</h1>
+                <button id="test-menu-btn" class="btn btn-icon" title="Menu">⋮</button>
+            </header>
+
+            <div class="test-container">
+                <div class="test-progress">
+                    <span id="test-current">1</span> / <span id="test-total">0</span>
+                    <span id="test-score" style="margin-left: 1rem;">Score: <span id="test-correct">0</span>/<span
+                            id="test-attempted">0</span></span>
+                </div>
+
+                <div class="test-prompt">
+                    <div class="test-prompt-label">Translate to target language:</div>
+                    <div id="test-prompt-text" class="test-prompt-text"></div>
+                </div>
+
+                <div id="test-input-area" class="test-input-area">
+                    <!-- Writing Test -->
+                    <div id="writing-test-input" class="hidden">
+                        <textarea id="test-answer-input" rows="3" placeholder="Type your answer here..."></textarea>
+                        <button id="submit-answer-btn" class="btn btn-primary">Submit Answer</button>
+                    </div>
+
+                    <!-- Speaking Test -->
+                    <div id="speaking-test-input" class="hidden">
+                        <button id="speak-answer-btn" class="btn btn-primary btn-large">🎤 Speak Answer</button>
+                        <div id="speaking-status" class="recording-status"></div>
+                        <div id="recognized-text" class="recognized-text hidden"></div>
+                    </div>
+                </div>
+
+                <div id="test-feedback" class="test-feedback hidden">
+                    <div id="feedback-message" class="feedback-message"></div>
+                    <div id="feedback-comparison" class="feedback-comparison"></div>
+                    <button id="next-test-btn" class="btn btn-primary">Next Sentence</button>
+                </div>
+
+                <div id="test-complete" class="test-complete hidden">
+                    <div class="test-complete-icon">🎉</div>
+                    <h2>Test Complete!</h2>
+                    <div class="test-final-score">
+                        Final Score: <span id="final-score">0</span>/<span id="final-total">0</span>
+                        (<span id="final-percentage">0</span>%)
+                    </div>
+                    <div class="test-actions">
+                        <button id="retry-test-btn" class="btn btn-primary">Retry Test</button>
+                        <button id="back-to-player-btn" class="btn btn-secondary">Back to Playlist</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Sentence Editor Modal -->
         <div id="editor-modal" class="modal hidden">
             <div class="modal-content">
@@ -124,6 +201,11 @@
                         <label for="target-text-input">Target Language Sentence</label>
                         <textarea id="target-text-input" rows="3" required
                             placeholder="Enter sentence in the language you're learning"></textarea>
+                        <button type="button" id="voice-input-btn" class="btn btn-secondary"
+                            style="margin-top: 0.5rem;">
+                            🎤 Voice Input
+                        </button>
+                        <span id="voice-input-status" class="recording-status"></span>
                     </div>
 
                     <div class="form-group">
@@ -147,6 +229,14 @@
                                 Delete</button>
                             <span id="recording-status" class="recording-status"></span>
                         </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="add-another-checkbox">
+                            Add another sentence after saving
+                        </label>
+                        <small>Keep this form open to quickly add multiple sentences</small>
                     </div>
 
                     <div class="form-actions">
@@ -191,6 +281,19 @@
                         <small>Your native language for translations</small>
                     </div>
 
+                    <div class="form-group">
+                        <label for="playlist-icon">Icon (Emoji)</label>
+                        <input type="text" id="playlist-icon" maxlength="2" placeholder="📚" value="📚">
+                        <small>Choose an emoji to represent this playlist</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="playlist-description">Description (Optional)</label>
+                        <textarea id="playlist-description" rows="2"
+                            placeholder="What is this playlist for?"></textarea>
+                        <small>Brief description of this playlist</small>
+                    </div>
+
                     <div class="form-actions">
                         <button type="button" id="cancel-playlist-btn" class="btn btn-secondary">Cancel</button>
                         <button type="submit" class="btn btn-primary">Create Playlist</button>
@@ -220,8 +323,96 @@
                         <small>Pause between repetitions</small>
                     </div>
 
+                    <div class="form-group">
+                        <label for="sleep-timer-select">Sleep Timer</label>
+                        <select id="sleep-timer-select">
+                            <option value="0">Off</option>
+                            <option value="15">15 minutes</option>
+                            <option value="30">30 minutes</option>
+                            <option value="45">45 minutes</option>
+                            <option value="60">1 hour</option>
+                            <option value="90">1.5 hours</option>
+                            <option value="120">2 hours</option>
+                        </select>
+                        <small id="sleep-timer-status">Timer not set</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="speech-rate-input">Speech Rate: <span id="speech-rate-value">1.0</span>x</label>
+                        <input type="range" id="speech-rate-input" min="0.5" max="2.0" step="0.1" value="1.0">
+                        <small>Adjust the speed of text-to-speech (0.5x = slower, 2.0x = faster)</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="voice-select">Voice</label>
+                        <select id="voice-select">
+                            <option value="">Auto (System Default)</option>
+                        </select>
+                        <small>Choose a specific voice for text-to-speech</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="speak-native-checkbox">
+                            Speak native language after target language
+                        </label>
+                        <small>When enabled, plays translation after the target language sentence</small>
+                    </div>
+
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary">Save Settings</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Edit Playlist Modal -->
+        <div id="edit-playlist-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Edit Playlist</h2>
+                    <button id="close-edit-playlist-btn" class="btn btn-icon">×</button>
+                </div>
+
+                <form id="edit-playlist-form">
+                    <div class="form-group">
+                        <label for="edit-playlist-name">Playlist Name</label>
+                        <input type="text" id="edit-playlist-name" required placeholder="Enter playlist name">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Choose Icon</label>
+                        <div class="icon-picker">
+                            <button type="button" class="icon-option" data-icon="📚">📚</button>
+                            <button type="button" class="icon-option" data-icon="🇯🇵">🇯🇵</button>
+                            <button type="button" class="icon-option" data-icon="🇨🇳">🇨🇳</button>
+                            <button type="button" class="icon-option" data-icon="🇺🇸">🇺🇸</button>
+                            <button type="button" class="icon-option" data-icon="🇪🇸">🇪🇸</button>
+                            <button type="button" class="icon-option" data-icon="🇫🇷">🇫🇷</button>
+                            <button type="button" class="icon-option" data-icon="🇩🇪">🇩🇪</button>
+                            <button type="button" class="icon-option" data-icon="🎯">🎯</button>
+                            <button type="button" class="icon-option" data-icon="✨">✨</button>
+                            <button type="button" class="icon-option" data-icon="🌟">🌟</button>
+                            <button type="button" class="icon-option" data-icon="💡">💡</button>
+                            <button type="button" class="icon-option" data-icon="🎓">🎓</button>
+                            <button type="button" class="icon-option" data-icon="📖">📖</button>
+                            <button type="button" class="icon-option" data-icon="✏️">✏️</button>
+                            <button type="button" class="icon-option" data-icon="🎨">🎨</button>
+                            <button type="button" class="icon-option" data-icon="🎵">🎵</button>
+                        </div>
+                        <input type="text" id="edit-playlist-icon" maxlength="2" placeholder="Or type emoji"
+                            style="margin-top: 0.5rem;">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-playlist-description">Description</label>
+                        <textarea id="edit-playlist-description" rows="3"
+                            placeholder="What is this playlist for?"></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" id="cancel-edit-playlist-btn" class="btn btn-secondary">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
                     </div>
                 </form>
             </div>
@@ -230,12 +421,14 @@
         <!-- Playlist Menu Modal -->
         <div id="playlist-menu-modal" class="modal hidden">
             <div class="modal-content modal-menu">
-                <button id="rename-playlist-btn" class="menu-item">✏️ Rename Playlist</button>
+                <button id="writing-test-btn" class="menu-item">✍️ Writing Test</button>
+                <button id="speaking-test-btn" class="menu-item">🎤 Speaking Test</button>
+                <button id="edit-playlist-btn" class="menu-item">✏️ Edit Playlist</button>
+                <button id="settings-btn" class="menu-item">⚙️ Settings</button>
                 <button id="export-playlist-btn" class="menu-item">📤 Export Playlist</button>
                 <button id="import-playlist-btn" class="menu-item">📥 Import Playlist</button>
-                <button id="settings-btn" class="menu-item">⚙️ Settings</button>
                 <button id="delete-playlist-btn" class="menu-item danger">🗑️ Delete Playlist</button>
-                <button id="close-menu-btn" class="menu-item">Cancel</button>
+                <button id="close-menu-btn" class="menu-item">✖️ Close</button>
             </div>
         </div>
     </div>
@@ -248,6 +441,8 @@
 
     <script src="js/storage.js"></script>
     <script src="js/translation.js"></script>
+    <script src="js/welcome.js"></script>
+    <script src="js/test.js"></script>
     <script src="js/audio.js"></script>
     <script src="js/playlist.js"></script>
     <script src="js/ui.js"></script>
