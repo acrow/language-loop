@@ -245,8 +245,19 @@ class AudioEngine {
                 resolve(); // Continue playback even if TTS fails
             };
 
-            this.synth.cancel(); // Cancel any ongoing speech
-            this.synth.speak(utterance);
+            // iOS Safari fix: Cancel any ongoing speech first
+            this.synth.cancel();
+
+            // iOS Safari fix: Resume synthesis (required for iOS)
+            // This ensures speech synthesis is ready after user interaction
+            if (this.synth.paused) {
+                this.synth.resume();
+            }
+
+            // Small delay to ensure iOS is ready (helps with rapid consecutive calls)
+            setTimeout(() => {
+                this.synth.speak(utterance);
+            }, 10);
         });
     }
 
