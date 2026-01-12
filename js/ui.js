@@ -86,6 +86,24 @@ class UIManager {
             this.autoTranslate();
         });
 
+        // Sleep timer in player view
+        document.getElementById('sleep-timer-player')?.addEventListener('change', (e) => {
+            const minutes = parseInt(e.target.value);
+            const selectEl = e.target;
+            const labelEl = selectEl.previousElementSibling;
+
+            if (minutes > 0) {
+                audioEngine.setSleepTimer(minutes);
+                // Hide dropdown and label, show countdown
+                selectEl.classList.add('hidden');
+                labelEl.classList.add('hidden');
+                this.startCountdownDisplay();
+            } else {
+                audioEngine.clearSleepTimer();
+                this.stopCountdownDisplay();
+            }
+        });
+
         // Voice input
         document.getElementById('voice-input-btn')?.addEventListener('click', () => {
             this.toggleVoiceInput();
@@ -468,12 +486,20 @@ class UIManager {
 
     updatePlaybackButton(isPlaying) {
         const btn = document.getElementById('play-pause-btn');
+        const timerControls = document.querySelector('.sleep-timer-controls');
+
         if (isPlaying) {
             btn.textContent = '⏸';
             btn.title = 'Pause';
+            // Show timer controls when playing
+            timerControls.classList.remove('hidden');
         } else {
             btn.textContent = '▶';
             btn.title = 'Play';
+            // Hide timer controls and clear timer when stopped
+            timerControls.classList.add('hidden');
+            this.stopCountdownDisplay();
+            audioEngine.clearSleepTimer();
         }
     }
 
@@ -594,7 +620,7 @@ class UIManager {
             await this.renderPlaylists();
             await this.showPlayerView(playlistManager.currentPlaylistId);
 
-            alert('Playlist updated successfully!');
+            this.showToast(`Playlist "${name}" updated successfully!`);
         } catch (error) {
             alert('Error updating playlist: ' + error.message);
         }
@@ -737,6 +763,17 @@ class UIManager {
                 await playlistManager.deleteSentence(sentenceId);
                 audioEngine.loadPlaylist(playlistManager.currentSentences);
                 await this.renderSentences(playlistManager.currentSentences);
+
+                // Update player header display
+                if (playlistManager.currentSentences.length > 0) {
+                    const currentIndex = Math.min(audioEngine.currentIndex, playlistManager.currentSentences.length - 1);
+                    this.updateCurrentSentence(currentIndex);
+                } else {
+                    // Clear display if no sentences left
+                    document.getElementById('current-target-text').textContent = 'No sentences';
+                    document.getElementById('current-native-text').textContent = '';
+                    document.getElementById('current-position').textContent = '0';
+                }
             } catch (error) {
                 alert('Error deleting sentence: ' + error.message);
             }
@@ -930,12 +967,8 @@ class UIManager {
             speakNative: false
         };
 
-        // Sleep timer remains global
-        const sleepTimer = await storage.getSetting('sleepTimer', 0);
-
         document.getElementById('repeat-count-input').value = settings.repeatCount;
         document.getElementById('pause-duration-input').value = settings.pauseDuration;
-        document.getElementById('sleep-timer-select').value = sleepTimer;
         document.getElementById('speech-rate-input').value = settings.speechRate;
         document.getElementById('speech-rate-value').textContent = settings.speechRate.toFixed(1);
         document.getElementById('speak-native-checkbox').checked = settings.speakNative;
@@ -949,7 +982,6 @@ class UIManager {
             document.getElementById('speech-rate-value').textContent = parseFloat(e.target.value).toFixed(1);
         };
 
-        this.updateSleepTimerStatus();
         this.showModal('settings-modal');
     }
 
@@ -972,7 +1004,6 @@ class UIManager {
     async saveSettings() {
         const repeatCount = parseInt(document.getElementById('repeat-count-input').value);
         const pauseDuration = parseFloat(document.getElementById('pause-duration-input').value);
-        const sleepTimer = parseInt(document.getElementById('sleep-timer-select').value);
         const speechRate = parseFloat(document.getElementById('speech-rate-input').value);
         const preferredVoice = document.getElementById('voice-select').value;
         const speakNative = document.getElementById('speak-native-checkbox').checked;
@@ -997,29 +1028,58 @@ class UIManager {
             audioEngine.speakNativeLanguage = speakNative;
         }
 
-        // Sleep timer remains global
-        await storage.setSetting('sleepTimer', sleepTimer);
-        if (sleepTimer > 0) {
-            audioEngine.setSleepTimer(sleepTimer);
-        } else {
-            audioEngine.clearSleepTimer();
-        }
-
-        this.updateSleepTimerStatus();
         this.hideModal('settings-modal');
-        alert('Settings saved for this playlist!');
+        this.showToast('Settings saved for this playlist!');
     }
 
-    updateSleepTimerStatus() {
-        const remaining = audioEngine.getSleepTimerRemaining();
-        const statusEl = document.getElementById('sleep-timer-status');
+    startCountdownDisplay() {
+        const countdownEl = document.getElementById('sleep-timer-countdown');
+        countdownEl.classList.remove('hidden');
 
-        if (remaining > 0) {
-            statusEl.textContent = `Timer active: ${remaining} minutes remaining`;
-            statusEl.style.color = 'var(--accent)';
-        } else {
-            statusEl.textContent = 'Timer not set';
-            statusEl.style.color = '';
+        // Clear any existing interval
+        if (this.countdownInterval) {
+            clearInterval(this.countdownInterval);
+        }
+
+        // Update countdown every second
+        this.countdownInterval = setInterval(() => {
+            const remaining = audioEngine.getSleepTimerRemaining();
+            if (remaining > 0) {
+                const minutes = Math.floor(remaining);
+                const seconds = Math.round((remaining - minutes) * 60);
+                countdownEl.textContent = `⏰ ${minutes}:${seconds.toString().padStart(2, '0')}`;
+            } else {
+                this.stopCountdownDisplay();
+            }
+        }, 1000);
+
+        // Initial update
+        const remaining = audioEngine.getSleepTimerRemaining();
+        const minutes = Math.floor(remaining);
+        const seconds = Math.round((remaining - minutes) * 60);
+        countdownEl.textContent = `⏰ ${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    stopCountdownDisplay() {
+        const countdownEl = document.getElementById('sleep-timer-countdown');
+        const selectEl = document.getElementById('sleep-timer-player');
+        const labelEl = selectEl?.previousElementSibling;
+
+        countdownEl.classList.add('hidden');
+        countdownEl.textContent = '';
+
+        if (this.countdownInterval) {
+            clearInterval(this.countdownInterval);
+            this.countdownInterval = null;
+        }
+
+        // Reset select to "Off" and show dropdown/label again
+        if (selectEl) {
+            selectEl.value = '0';
+            selectEl.classList.remove('hidden');
+        }
+        if (labelEl) {
+            labelEl.classList.remove('hidden');
         }
     }
 
@@ -1176,9 +1236,19 @@ class UIManager {
         } else {
             messageEl.textContent = `❌ Not quite (${result.similarity}% match)`;
             messageEl.className = 'feedback-message incorrect';
+
+            // Get character-by-character diff
+            const diff = testManager.getDiffHTML(result.userAnswer, result.correctAnswer);
+
             comparisonEl.innerHTML = `
-                <div style="color: var(--danger); font-size: 1.25rem; margin-bottom: 0.5rem;">${this.escapeHtml(result.userAnswer)}</div>
-                <div style="color: var(--success); font-size: 1.25rem;">${this.escapeHtml(result.correctAnswer)}</div>
+                <div class="diff-container">
+                    <div class="diff-label">Your answer:</div>
+                    <div class="diff-text">${diff.userHTML}</div>
+                </div>
+                <div class="diff-container">
+                    <div class="diff-label">Correct answer:</div>
+                    <div class="diff-text">${diff.correctHTML}</div>
+                </div>
             `;
             nextBtn.textContent = 'Try Again';
             nextBtn.style.display = 'inline-block';
@@ -1242,6 +1312,29 @@ class UIManager {
 
     retryTest() {
         this.startTest(testManager.testMode);
+    }
+
+    // Toast Notifications
+    showToast(message, type = 'success') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+
+        const icons = {
+            success: '✓',
+            error: '✕',
+            warning: '⚠'
+        };
+
+        toast.innerHTML = `<span class="toast-icon">${icons[type] || icons.success}</span><span class="toast-message">${message}</span>`;
+
+        container.appendChild(toast);
+
+        // Auto dismiss after 3 seconds
+        setTimeout(() => {
+            toast.classList.add('hiding');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
     }
 }
 

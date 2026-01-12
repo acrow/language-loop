@@ -74,7 +74,8 @@ class TestManager {
         return text
             .toLowerCase()
             .trim()
-            .replace(/[.,!?;:]/g, '') // Remove punctuation
+            // Remove all punctuation and special characters
+            .replace(/[.,!?;:'""\u201c\u201d\u2018\u2019\u3001\u3002\uff0c\uff01\uff1f\uff1b\uff1a\u300c\u300d\u300e\u300f\u2026\u2014\u2013\-\(\)\[\]\{\}]/g, '')
             .replace(/\s+/g, ' '); // Normalize whitespace
     }
 
@@ -115,6 +116,44 @@ class TestManager {
         }
 
         return matrix[str2.length][str1.length];
+    }
+
+    // Generate HTML diff showing word-by-word differences
+    getDiffHTML(userAnswer, correctAnswer) {
+        const userWords = userAnswer.toLowerCase().split(/\s+/);
+        const correctWords = correctAnswer.toLowerCase().split(/\s+/);
+
+        let userHTML = '';
+        let correctHTML = '';
+
+        const maxLen = Math.max(userWords.length, correctWords.length);
+
+        for (let i = 0; i < maxLen; i++) {
+            const userWord = userWords[i] || '';
+            const correctWord = correctWords[i] || '';
+
+            if (userWord === correctWord) {
+                // Correct word
+                userHTML += `<span class="char-correct">${this.escapeHtml(userWord)}</span> `;
+                correctHTML += `<span class="char-correct">${this.escapeHtml(correctWord)}</span> `;
+            } else {
+                // Different word
+                if (userWord) {
+                    userHTML += `<span class="char-wrong">${this.escapeHtml(userWord)}</span> `;
+                }
+                if (correctWord) {
+                    correctHTML += `<span class="char-missing">${this.escapeHtml(correctWord)}</span> `;
+                }
+            }
+        }
+
+        return { userHTML: userHTML.trim(), correctHTML: correctHTML.trim() };
+    }
+
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 
     nextSentence() {
