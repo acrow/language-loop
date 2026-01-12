@@ -1,151 +1,130 @@
-// Dynamic UI Translation System using Translation API
-class I18n {
+﻿// Internationalization Manager
+class I18nManager {
     constructor() {
-        this.currentLang = 'en-US';
-        this.originalTexts = new Map(); // Store original English text
-        this.translationCache = new Map(); // Cache translations
-        this.isTranslating = false;
+        this.currentLang = 'en';
+        this.translations = {};
+        this.fallbackLang = 'en';
     }
 
     async init() {
-        // Store all original English text
-        this.storeOriginalTexts();
+        // Load saved language preference
+        const savedLang = await storage.getSetting('interfaceLanguage', 'en');
+        await this.loadLanguage(savedLang);
+    }
 
-        // Load saved native language
-        const nativeLang = await storage.getSetting('globalNativeLang', 'zh-CN');
-        this.currentLang = nativeLang;
+    async loadLanguage(lang) {
+        try {
+            const response = await fetch(`i18n/${lang}.json`);
+            if (!response.ok) {
+                throw new Error(`Failed to load ${lang}.json`);
+            }
+            this.translations[lang] = await response.json();
+            this.currentLang = lang;
 
-        // Translate if not English
-        if (nativeLang !== 'en-US') {
-            await this.translateUI(nativeLang);
+            // If not English, also load English as fallback
+            if (lang !== this.fallbackLang && !this.translations[this.fallbackLang]) {
+                const fallbackResponse = await fetch(`i18n/${this.fallbackLang}.json`);
+                if (fallbackResponse.ok) {
+                    this.translations[this.fallbackLang] = await fallbackResponse.json();
+                }
+            }
+
+            this.updateUI();
+            return true;
+        } catch (error) {
+            console.error('Error loading language:', error);
+            // Fall back to English
+            if (lang !== this.fallbackLang) {
+                return this.loadLanguage(this.fallbackLang);
+            }
+            return false;
         }
     }
 
-    storeOriginalTexts() {
-        // Store all text content and placeholders
-        document.querySelectorAll('[data-i18n]').forEach(element => {
-            const key = element.getAttribute('data-i18n');
+    t(key, params = {}) {
+        const keys = key.split('.');
+        let value = this.translations[this.currentLang];
 
-            if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
-                this.originalTexts.set(key, element.placeholder);
+        // Try to get value from current language
+        for (const k of keys) {
+            if (value && typeof value === 'object') {
+                value = value[k];
             } else {
-                this.originalTexts.set(key, element.textContent.trim());
+                value = undefined;
+                break;
             }
+        }
+
+        // Fall back to English if not found
+        if (value === undefined && this.currentLang !== this.fallbackLang) {
+            value = this.translations[this.fallbackLang];
+            for (const k of keys) {
+                if (value && typeof value === 'object') {
+                    value = value[k];
+                } else {
+                    value = undefined;
+                    break;
+                }
+            }
+        }
+
+        // If still not found, return the key
+        if (value === undefined) {
+            return key;
+        }
+
+        // Replace parameters
+        if (typeof value === 'string') {
+            return value.replace(/\{(\w+)\}/g, (match, param) => {
+                return params[param] !== undefined ? params[param] : match;
+            });
+        }
+
+        return value;
+    }
+
+    updateUI() {
+        // Update all elements with data-i18n attribute
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            const text = this.t(key);
+
+            // Update based on element type
+            if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                if (el.hasAttribute('placeholder')) {
+                    el.placeholder = text;
+                } else {
+                    el.value = text;
+                }
+            } else {
+                el.textContent = text;
+            }
+        });
+
+        // Update elements with data-i18n-title attribute
+        document.querySelectorAll('[data-i18n-title]').forEach(el => {
+            const key = el.getAttribute('data-i18n-title');
+            el.title = this.t(key);
         });
     }
 
     async setLanguage(lang) {
-        if (this.currentLang === lang) return;
-
-        this.currentLang = lang;
-
-        if (lang === 'en-US') {
-            // Restore original English text
-            this.restoreOriginalTexts();
-        } else {
-            // Translate to target language
-            await this.translateUI(lang);
-        }
+        await this.loadLanguage(lang);
+        await storage.setSetting('interfaceLanguage', lang);
     }
 
-    restoreOriginalTexts() {
-        document.querySelectorAll('[data-i18n]').forEach(element => {
-            const key = element.getAttribute('data-i18n');
-            const originalText = this.originalTexts.get(key);
-
-            if (originalText) {
-                if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
-                    element.placeholder = originalText;
-                } else {
-                    element.textContent = originalText;
-                }
-            }
-        });
+    getCurrentLanguage() {
+        return this.currentLang;
     }
 
-    async translateUI(targetLang) {
-        if (this.isTranslating) return;
-        this.isTranslating = true;
-
-        try {
-            // Collect all texts to translate
-            const textsToTranslate = [];
-            const elements = [];
-
-            document.querySelectorAll('[data-i18n]').forEach(element => {
-                const key = element.getAttribute('data-i18n');
-                const originalText = this.originalTexts.get(key);
-
-                if (originalText) {
-                    textsToTranslate.push(originalText);
-                    elements.push(element);
-                }
-            });
-
-            // Translate in batches to avoid rate limiting
-            const batchSize = 5;
-            for (let i = 0; i < textsToTranslate.length; i += batchSize) {
-                const batch = textsToTranslate.slice(i, i + batchSize);
-                const batchElements = elements.slice(i, i + batchSize);
-
-                await Promise.all(batch.map(async (text, index) => {
-                    const element = batchElements[index];
-                    const cacheKey = `${text}|${targetLang}`;
-
-                    // Check cache first
-                    let translation = this.translationCache.get(cacheKey);
-
-                    if (!translation) {
-                        // Translate
-                        translation = await translationService.translate(text, 'en-US', targetLang);
-                        this.translationCache.set(cacheKey, translation);
-                    }
-
-                    // Apply translation
-                    if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
-                        element.placeholder = translation;
-                    } else {
-                        element.textContent = translation;
-                    }
-                }));
-
-                // Small delay between batches
-                if (i + batchSize < textsToTranslate.length) {
-                    await this.sleep(300);
-                }
-            }
-        } catch (error) {
-            console.error('UI translation error:', error);
-        } finally {
-            this.isTranslating = false;
-        }
-    }
-
-    sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
-    // Get translated text for dynamic content (alerts, etc.)
-    async t(text, fromLang = 'en-US') {
-        if (this.currentLang === 'en-US') {
-            return text;
-        }
-
-        const cacheKey = `${text}|${this.currentLang}`;
-        let translation = this.translationCache.get(cacheKey);
-
-        if (!translation) {
-            translation = await translationService.translate(text, fromLang, this.currentLang);
-            this.translationCache.set(cacheKey, translation);
-        }
-
-        return translation;
-    }
-
-    clearCache() {
-        this.translationCache.clear();
+    getAvailableLanguages() {
+        return [
+            { code: 'en', name: 'English' },
+            { code: 'zh', name: '中文' },
+            { code: 'ja', name: '日本語' }
+        ];
     }
 }
 
 // Create global instance
-const i18n = new I18n();
+const i18n = new I18nManager();

@@ -1,0 +1,64 @@
+﻿{
+  "common": {
+    "play": "再生",
+    "pause": "一時停止",
+    "stop": "停止",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "delete": "削除",
+    "edit": "編集",
+    "add": "追加",
+    "close": "閉じる",
+    "next": "次へ",
+    "previous": "前へ",
+    "settings": "設定"
+  },
+  "welcome": {
+    "welcome": "LoopBuddyへようこそ",
+    "welcome-subtitle": "音声繰り返しで言語を学ぶ",
+    "step1-title": "プレイリストを作成",
+    "step1-desc": "文章をプレイリストに整理して、音楽のように",
+    "step2-title": "自動音声生成",
+    "step2-desc": "文章は目標言語で自動的に読み上げられます",
+    "step3-title": "繰り返し学習",
+    "step3-desc": "繰り返し回数を設定して、継続的に練習してください",
+    "languageSettings": "言語設定",
+    "targetLanguage": "学習言語",
+    "interfaceLanguage": "インターフェース言語",
+    "start": "始める"
+  },
+  "playlist": {
+    "playlists": "プレイリスト",
+    "createPlaylist": "プレイリストを作成",
+    "playlistName": "プレイリスト名",
+    "targetLanguage": "学習言語",
+    "nativeLanguage": "母国語",
+    "icon": "アイコン",
+    "description": "説明",
+    "editPlaylist": "プレイリストを編集",
+    "noPlaylists": "プレイリストがありません",
+    "createFirst": "最初のプレイリストを作成して学習を始めてください",
+    "writingTestMenu": "作文テスト",
+    "speakingTestMenu": "口頭テスト",
+    "editPlaylistMenu": "プレイリストを編集",
+    "settingsMenu": "設定",
+    "exportPlaylistMenu": "プレイリストをエクスポート",
+    "importPlaylistMenu": "プレイリストをインポート",
+    "deletePlaylistMenu": "プレイリストを削除",
+    "closeMenu": "メニューを閉じる"
+  },
+  "sentence": {
+    "sentences": "文章",
+    "addSentence": "文章を追加",
+    "targetText": "目標言語の文章",
+    "nativeText": "翻訳"
+  },
+  "settings": {
+    "settings": "設定",
+    "repeatCount": "文章ごとの繰り返し回数",
+    "pauseDuration": "一時停止時間（秒）",
+    "speechRate": "音声速度",
+    "voice": "音声",
+    "interfaceLanguage": "インターフェース言語"
+  }
+}

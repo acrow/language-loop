@@ -1,0 +1,64 @@
+﻿{
+  "common": {
+    "play": "Play",
+    "pause": "Pause",
+    "stop": "Stop",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "close": "Close",
+    "next": "Next",
+    "previous": "Previous",
+    "settings": "Settings"
+  },
+  "welcome": {
+    "welcome": "Welcome to LoopBuddy",
+    "welcome-subtitle": "Learn languages through audio repetition",
+    "step1-title": "Create Playlists",
+    "step1-desc": "Organize your sentences into playlists, just like music",
+    "step2-title": "Auto Voice Generation",
+    "step2-desc": "Sentences are spoken automatically in your target language",
+    "step3-title": "Repeat & Learn",
+    "step3-desc": "Configure repetitions and practice continuously",
+    "languageSettings": "Language Settings",
+    "targetLanguage": "Target Language (Learning)",
+    "interfaceLanguage": "Interface Language",
+    "start": "Get Started"
+  },
+  "playlist": {
+    "playlists": "Playlists",
+    "createPlaylist": "Create Playlist",
+    "playlistName": "Playlist Name",
+    "targetLanguage": "Target Language",
+    "nativeLanguage": "Native Language",
+    "icon": "Icon",
+    "description": "Description",
+    "editPlaylist": "Edit Playlist",
+    "noPlaylists": "No playlists yet",
+    "createFirst": "Create your first playlist to start learning",
+    "writingTestMenu": "Writing Test",
+    "speakingTestMenu": "Speaking Test",
+    "editPlaylistMenu": "Edit Playlist",
+    "settingsMenu ": "Settings",
+    "exportPlaylistMenu": "Export Playlist",
+    "importPlaylistMenu": "Import Playlist",
+    "deletePlaylistMenu": "Delete Playlist",
+    "closeMenu": "Close Menu"
+  },
+  "sentence": {
+    "sentences": "Sentences",
+    "addSentence": "Add Sentence",
+    "targetText": "Target Language Sentence",
+    "nativeText": "Translation"
+  },
+  "settings": {
+    "settings": "Settings",
+    "repeatCount": "Repeat Count per Sentence",
+    "pauseDuration": "Pause Duration (seconds)",
+    "speechRate": "Speech Rate",
+    "voice": "Voice",
+    "interfaceLanguage": "Interface Language"
+  }
+}

@@ -14,6 +14,9 @@ class App {
             // Migrate existing playlists to have settings
             await storage.migratePlaylistSettings();
 
+            // Initialize i18n
+            await i18n.init();
+
             // Initialize UI
             ui.init();
 

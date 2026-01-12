@@ -1,0 +1,64 @@
+﻿{
+  "common": {
+    "play": "播放",
+    "pause": "暂停",
+    "stop": "停止",
+    "save": "保存",
+    "cancel": "取消",
+    "delete": "删除",
+    "edit": "编辑",
+    "add": "添加",
+    "close": "关闭",
+    "next": "下一个",
+    "previous": "上一个",
+    "settings": "设置"
+  },
+  "welcome": {
+    "welcome": "欢迎使用 LoopBuddy",
+    "welcome-subtitle": "通过音频重复学习语言",
+    "step1-title": "创建播放列表",
+    "step1-desc": "将你的句子组织成播放列表，就像音乐一样",
+    "step2-title": "自动语音生成",
+    "step2-desc": "你的句子会自动用目标语言朗读",
+    "step3-title": "重复学习",
+    "step3-desc": "配置重复次数并持续练习",
+    "languageSettings": "语言设置",
+    "targetLanguage": "学习语言",
+    "interfaceLanguage": "界面语言",
+    "start": "开始"
+  },
+  "playlist": {
+    "playlists": "播放列表",
+    "createPlaylist": "创建播放列表",
+    "playlistName": "播放列表名称",
+    "targetLanguage": "学习语言",
+    "nativeLanguage": "母语",
+    "icon": "图标",
+    "description": "描述",
+    "editPlaylist": "编辑播放列表",
+    "noPlaylists": "还没有播放列表",
+    "createFirst": "创建你的第一个播放列表开始学习",
+    "writingTestMenu": "写作测试",
+    "speakingTestMenu": "口语测试",
+    "editPlaylistMenu": "编辑播放列表",
+    "settingsMenu": "设置",
+    "exportPlaylistMenu": "导出播放列表",
+    "importPlaylistMenu": "导入播放列表",
+    "deletePlaylistMenu": "删除播放列表",
+    "closeMenu": "关闭菜单"
+  },
+  "sentence": {
+    "sentences": "句子",
+    "addSentence": "添加句子",
+    "targetText": "目标语言句子",
+    "nativeText": "翻译"
+  },
+  "settings": {
+    "settings": "设置",
+    "repeatCount": "每句重复次数",
+    "pauseDuration": "暂停时长（秒）",
+    "speechRate": "语速",
+    "voice": "语音",
+    "interfaceLanguage": "界面语言"
+  }
+}

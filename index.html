@@ -24,31 +24,31 @@
         <div id="welcome-view" class="view hidden">
             <div class="welcome-container">
                 <div class="welcome-icon">🎵</div>
-                <h1 id="welcome-title">Welcome to Language Loop</h1>
-                <p class="welcome-subtitle" id="welcome-subtitle">Learn languages through audio repetition</p>
+                <h1 id="welcome-title" class="welcome-title" data-i18n="welcome.welcome"></h1>
+                <p class="welcome-subtitle" id="welcome-subtitle" data-i18n="welcome.welcome-subtitle"></p>
 
                 <div class="welcome-steps">
                     <div class="step">
                         <div class="step-icon">📝</div>
-                        <h3 id="step1-title">Create Playlists</h3>
-                        <p id="step1-desc">Organize your sentences into playlists, just like music</p>
+                        <h3 id="step1-title" data-i18n="welcome.step1-title"></h3>
+                        <p id="step1-desc" data-i18n="welcome.step1-desc"></p>
                     </div>
                     <div class="step">
                         <div class="step-icon">🔊</div>
-                        <h3 id="step2-title">Auto Voice Generation</h3>
-                        <p id="step2-desc">Sentences are spoken automatically in your target language</p>
+                        <h3 id="step2-title" data-i18n="welcome.step2-title"></h3>
+                        <p id="step2-desc" data-i18n="welcome.step2-desc"></p>
                     </div>
                     <div class="step">
                         <div class="step-icon">🔁</div>
-                        <h3 id="step3-title">Repeat & Learn</h3>
-                        <p id="step3-desc">Configure repetitions and practice continuously</p>
+                        <h3 id="step3-title" data-i18n="welcome.step3-title"></h3>
+                        <p id="step3-desc" data-i18n="welcome.step3-desc"></p>
                     </div>
                 </div>
 
                 <div class="welcome-config">
-                    <h3>Language Settings</h3>
+                    <h3 data-i18n="welcome.languageSettings"></h3>
                     <div class="form-group">
-                        <label for="global-target-lang">Target Language (Learning)</label>
+                        <label for="global-target-lang" data-i18n="welcome.targetLanguage"></label>
                         <select id="global-target-lang">
                             <option value="en-US">English</option>
                             <option value="zh-CN">Chinese</option>
@@ -56,16 +56,16 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="global-native-lang">Native Language</label>
+                        <label for="global-native-lang" data-i18n="welcome.interfaceLanguage"></label>
                         <select id="global-native-lang">
-                            <option value="en-US">English</option>
-                            <option value="zh-CN">Chinese</option>
-                            <option value="ja-JP">Japanese</option>
+                            <option value="en">English</option>
+                            <option value="zh">中文 (Chinese)</option>
+                            <option value="ja">日本語 (Japanese)</option>
                         </select>
                     </div>
                 </div>
 
-                <button id="get-started-btn" class="btn btn-primary btn-large">Get Started</button>
+                <button id="get-started-btn" class="btn btn-primary btn-large" data-i18n="welcome.start"></button>
             </div>
         </div>
 
@@ -73,8 +73,9 @@
         <div id="library-view" class="view hidden">
             <header class="app-header">
                 <button id="language-settings-btn" class="btn btn-icon" title="Language Settings">🌐</button>
-                <h1>📚 My Playlists</h1>
-                <button id="add-playlist-btn" class="btn btn-icon" title="Create Playlist">+</button>
+                <h1>📚 <span data-i18n="playlist.playlists">My Playlists</span></h1>
+                <button id="add-playlist-btn" class="btn btn-icon" data-i18n-title="playlist.createPlaylist"
+                    title="Create Playlist">+</button>
             </header>
 
             <div id="playlists-container" class="playlists-grid">
@@ -83,9 +84,10 @@
 
             <div id="empty-library" class="empty-state hidden">
                 <div class="empty-icon">🎵</div>
-                <h2>No playlists yet</h2>
-                <p>Create your first playlist to start learning</p>
-                <button class="btn btn-primary" onclick="document.getElementById('add-playlist-btn').click()">Create
+                <h2 data-i18n="playlist.noPlaylists">No playlists yet</h2>
+                <p data-i18n="playlist.createFirst">Create your first playlist to start learning</p>
+                <button class="btn btn-primary" onclick="document.getElementById('add-playlist-btn').click()"
+                    data-i18n="playlist.createPlaylist">Create
                     Playlist</button>
             </div>
         </div>
@@ -131,8 +133,9 @@
 
             <div class="sentences-list">
                 <div class="list-header">
-                    <h3>Sentences</h3>
-                    <button id="add-sentence-btn" class="btn btn-small">+ Add</button>
+                    <h3 data-i18n="sentence.sentences">Sentences</h3>
+                    <button id="add-sentence-btn" class="btn btn-small">+ <span
+                            data-i18n="common.add">Add</span></button>
                 </div>
                 <div id="sentences-container">
                     <!-- Sentences will be rendered here -->
@@ -212,35 +215,38 @@
 
                 <form id="sentence-form">
                     <div class="form-group">
-                        <label for="target-text-input">Target Language Sentence</label>
+                        <label for="target-text-input" data-i18n="sentence.targetText">Target Language Sentence</label>
                         <textarea id="target-text-input" rows="3" required
                             placeholder="Enter sentence in the language you're learning"></textarea>
                         <button type="button" id="voice-input-btn" class="btn btn-secondary"
                             style="margin-top: 0.5rem;">
-                            🎤 Voice Input
+                            🎤 <span data-i18n="sentence.voiceInput">Voice Input</span>
                         </button>
                         <span id="voice-input-status" class="recording-status"></span>
                     </div>
 
                     <div class="form-group">
-                        <label for="native-text-input">Native Language Translation</label>
+                        <label for="native-text-input" data-i18n="sentence.nativeText">Native Language
+                            Translation</label>
                         <textarea id="native-text-input" rows="3" required
                             placeholder="Enter translation in your native language"></textarea>
                         <button type="button" id="auto-translate-btn" class="btn btn-secondary"
                             style="margin-top: 0.5rem;">
-                            🌐 Auto-Translate
+                            🌐 <span data-i18n="sentence.autoTranslate">Auto-Translate</span>
                         </button>
                     </div>
 
 
                     <div class="form-group">
-                        <label>Custom Voice (Optional)</label>
+                        <label data-i18n="sentence.customAudio">Custom Voice (Optional)</label>
                         <div class="recording-controls">
-                            <button type="button" id="record-btn" class="btn btn-secondary">🎙️ Record</button>
-                            <button type="button" id="play-recording-btn" class="btn btn-secondary hidden">▶ Play
-                                Recording</button>
+                            <button type="button" id="record-btn" class="btn btn-secondary">🎙️ <span
+                                    data-i18n="common.record">Record</span></button>
+                            <button type="button" id="play-recording-btn" class="btn btn-secondary hidden">▶ <span
+                                    data-i18n="common.play">Play</span>
+                                <span data-i18n="sentence.recording">Recording</span></button>
                             <button type="button" id="delete-recording-btn" class="btn btn-secondary hidden">🗑️
-                                Delete</button>
+                                <span data-i18n="common.delete">Delete</span></button>
                             <span id="recording-status" class="recording-status"></span>
                         </div>
                     </div>
@@ -265,18 +271,20 @@
         <div id="create-playlist-modal" class="modal hidden">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h2>Create Playlist</h2>
-                    <button id="close-playlist-modal-btn" class="btn btn-icon">×</button>
+                    <h2 data-i18n="playlist.createPlaylist">Create Playlist</h2>
+                    <button id="close-playlist-modal-btn" class="btn btn-icon" data-i18n-title="common.close"
+                        title="Close">×</button>
                 </div>
 
                 <form id="playlist-create-form">
                     <div class="form-group">
-                        <label for="playlist-name-input">Playlist Name</label>
+                        <label for="playlist-name-input" data-i18n="playlist.playlistName">Playlist Name</label>
                         <input type="text" id="playlist-name-input" required placeholder="e.g., Daily Chinese Practice">
                     </div>
 
                     <div class="form-group">
-                        <label for="playlist-target-lang">Target Language (Learning)</label>
+                        <label for="playlist-target-lang" data-i18n="playlist.targetLanguage">Target Language
+                            (Learning)</label>
                         <select id="playlist-target-lang" required>
                             <option value="en-US">English</option>
                             <option value="zh-CN">Chinese</option>
@@ -286,7 +294,8 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="playlist-native-lang">Native Language (Translation)</label>
+                        <label for="playlist-native-lang" data-i18n="playlist.nativeLanguage">Native Language
+                            (Translation)</label>
                         <select id="playlist-native-lang" required>
                             <option value="en-US">English</option>
                             <option value="zh-CN">Chinese</option>
@@ -296,13 +305,14 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="playlist-icon">Icon (Emoji)</label>
+                        <label for="playlist-icon" data-i18n="playlist.icon">Icon (Emoji)</label>
                         <input type="text" id="playlist-icon" maxlength="2" placeholder="📚" value="📚">
                         <small>Choose an emoji to represent this playlist</small>
                     </div>
 
                     <div class="form-group">
-                        <label for="playlist-description">Description (Optional)</label>
+                        <label for="playlist-description" data-i18n="playlist.description">Description
+                            (Optional)</label>
                         <textarea id="playlist-description" rows="2"
                             placeholder="What is this playlist for?"></textarea>
                         <small>Brief description of this playlist</small>
@@ -310,7 +320,8 @@
 
                     <div class="form-actions">
                         <button type="button" id="cancel-playlist-btn" class="btn btn-secondary">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Create Playlist</button>
+                        <button type="submit" class="btn btn-primary" data-i18n="playlist.createPlaylist">Create
+                            Playlist</button>
                     </div>
                 </form>
             </div>
@@ -320,32 +331,36 @@
         <div id="settings-modal" class="modal hidden">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h2>Settings</h2>
-                    <button id="close-settings-btn" class="btn btn-icon">×</button>
+                    <h2 data-i18n="settings.settings">Settings</h2>
+                    <button id="close-settings-btn" class="btn btn-icon" data-i18n-title="common.close"
+                        title="Close">×</button>
                 </div>
 
                 <form id="settings-form">
                     <div class="form-group">
-                        <label for="repeat-count-input">Repeat Count per Sentence</label>
+                        <label for="repeat-count-input" data-i18n="settings.repeatCount">Repeat Count per
+                            Sentence</label>
                         <input type="number" id="repeat-count-input" min="1" max="10" value="2">
                         <small>How many times to repeat each sentence</small>
                     </div>
 
                     <div class="form-group">
-                        <label for="pause-duration-input">Pause Duration (seconds)</label>
+                        <label for="pause-duration-input" data-i18n="settings.pauseDuration">Pause Duration
+                            (seconds)</label>
                         <input type="number" id="pause-duration-input" min="0" max="10" step="0.5" value="1">
                         <small>Pause between repetitions</small>
                     </div>
                     <div class="form-group">
                         <label>
-                            Speak native language after target language
+                            <span data-i18n="settings.speakNative">Speak native language after target language</span>
                         </label>
                         <input type="checkbox" id="speak-native-checkbox">
                         <small>When enabled, plays translation after the target language sentence</small>
                     </div>
 
                     <div class="form-group">
-                        <label for="speech-rate-input">Speech Rate: <span id="speech-rate-value">1.0</span>x</label>
+                        <label for="speech-rate-input"><span data-i18n="settings.speechRate">Speech Rate</span>: <span
+                                id="speech-rate-value">1.0</span>x</label>
                         <input type="range" id="speech-rate-input" min="0.5" max="2.0" step="0.1" value="1.0">
                         <small>Adjust the speed of text-to-speech (0.5x = slower, 2.0x = faster)</small>
                     </div>
@@ -359,9 +374,9 @@
                     </div>
 
 
-
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">Save Settings</button>
+                        <button type="submit" class="btn btn-primary" data-i18n="common.saveSettings">Save
+                            Settings</button>
                     </div>
                 </form>
             </div>
@@ -371,18 +386,19 @@
         <div id="edit-playlist-modal" class="modal hidden">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h2>Edit Playlist</h2>
-                    <button id="close-edit-playlist-btn" class="btn btn-icon">×</button>
+                    <h2 data-i18n="playlist.editPlaylist">Edit Playlist</h2>
+                    <button id="close-edit-playlist-btn" class="btn btn-icon" data-i18n-title="common.close"
+                        title="Close">×</button>
                 </div>
 
                 <form id="edit-playlist-form">
                     <div class="form-group">
-                        <label for="edit-playlist-name">Playlist Name</label>
+                        <label for="edit-playlist-name" data-i18n="playlist.playlistName">Playlist Name</label>
                         <input type="text" id="edit-playlist-name" required placeholder="Enter playlist name">
                     </div>
 
                     <div class="form-group">
-                        <label>Choose Icon</label>
+                        <label data-i18n="playlist.icon">Choose Icon</label>
                         <div class="icon-picker">
                             <button type="button" class="icon-option" data-icon="📚">📚</button>
                             <button type="button" class="icon-option" data-icon="🇯🇵">🇯🇵</button>
@@ -406,7 +422,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="edit-playlist-description">Description</label>
+                        <label for="edit-playlist-description" data-i18n="playlist.description">Description</label>
                         <textarea id="edit-playlist-description" rows="3"
                             placeholder="What is this playlist for?"></textarea>
                     </div>
@@ -422,14 +438,15 @@
         <!-- Playlist Menu Modal -->
         <div id="playlist-menu-modal" class="modal hidden">
             <div class="modal-content modal-menu">
-                <button id="writing-test-btn" class="menu-item">✍️ Writing Test</button>
-                <button id="speaking-test-btn" class="menu-item">🎤 Speaking Test</button>
-                <button id="edit-playlist-btn" class="menu-item">✏️ Edit Playlist</button>
-                <button id="settings-btn" class="menu-item">⚙️ Settings</button>
-                <button id="export-playlist-btn" class="menu-item">📤 Export Playlist</button>
-                <button id="import-playlist-btn" class="menu-item">📥 Import Playlist</button>
-                <button id="delete-playlist-btn" class="menu-item danger">🗑️ Delete Playlist</button>
-                <button id="close-menu-btn" class="menu-item">✖️ Close</button>
+                <button id="writing-test-btn" class="menu-item" data-i18n="playlist.writingTestMenu"></button>
+                <button id="speaking-test-btn" class="menu-item" data-i18n="playlist.speakingTestMenu"></button>
+                <button id="edit-playlist-btn" class="menu-item" data-i18n="playlist.editPlaylistMenu"></button>
+                <button id="settings-btn" class="menu-item" data-i18n="playlist.settingsMenu"></button>
+                <button id="export-playlist-btn" class="menu-item" data-i18n="playlist.exportPlaylistMenu"></button>
+                <button id="import-playlist-btn" class="menu-item" data-i18n="playlist.importPlaylistMenu"></button>
+                <button id="delete-playlist-btn" class="menu-item danger"
+                    data-i18n="playlist.deletePlaylistMenu"></button>
+                <button id="close-menu-btn" class="menu-item" data-i18n="playlist.closeMenu"></button>
             </div>
         </div>
     </div>
@@ -444,6 +461,7 @@
     <div id="toast-container"></div>
 
     <script src="js/storage.js"></script>
+    <script src="js/i18n.js"></script>
     <script src="js/translation.js"></script>
     <script src="js/welcome.js"></script>
     <script src="js/test.js"></script>

@@ -40,26 +40,20 @@ class WelcomeManager {
     async init() {
         // Load saved global settings
         const targetLang = await storage.getSetting('globalTargetLang', 'en-US');
-        const nativeLang = await storage.getSetting('globalNativeLang', 'zh-CN');
+        const interfaceLang = await storage.getSetting('interfaceLanguage', 'en');
 
         document.getElementById('global-target-lang').value = targetLang;
-        document.getElementById('global-native-lang').value = nativeLang;
+        document.getElementById('global-native-lang').value = interfaceLang;
 
-        this.currentLang = nativeLang;
-        this.updateWelcomeText(nativeLang);
-
-        // Set up event listener for language change
-        document.getElementById('global-native-lang')?.addEventListener('change', (e) => {
-            this.updateWelcomeText(e.target.value);
+        // Set up event listener for interface language change
+        document.getElementById('global-native-lang')?.addEventListener('change', async (e) => {
+            const lang = e.target.value;
+            await i18n.setLanguage(lang);
         });
 
-        // Save settings when changed
+        // Save target language when changed
         document.getElementById('global-target-lang')?.addEventListener('change', async (e) => {
             await storage.setSetting('globalTargetLang', e.target.value);
-        });
-
-        document.getElementById('global-native-lang')?.addEventListener('change', async (e) => {
-            await storage.setSetting('globalNativeLang', e.target.value);
         });
     }
 
