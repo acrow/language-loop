@@ -241,20 +241,26 @@ class AudioEngine {
 
             utterance.onend = () => resolve();
             utterance.onerror = (error) => {
+                // Suppress interrupted/canceled errors - these are normal during playback control
+                if (error.error === 'interrupted' || error.error === 'canceled') {
+                    resolve(); // Just resolve silently
+                    return;
+                }
+                // Only log actual errors
                 console.error('TTS error:', error);
                 resolve(); // Continue playback even if TTS fails
             };
 
-            // iOS Safari fix: Cancel any ongoing speech first
+            // Cancel any ongoing speech to ensure clean state
+            // This will trigger "interrupted" errors on previous utterances, but we suppress those
             this.synth.cancel();
 
             // iOS Safari fix: Resume synthesis (required for iOS)
-            // This ensures speech synthesis is ready after user interaction
             if (this.synth.paused) {
                 this.synth.resume();
             }
 
-            // Small delay to ensure iOS is ready (helps with rapid consecutive calls)
+            // Small delay to ensure synthesis is ready
             setTimeout(() => {
                 this.synth.speak(utterance);
             }, 10);
@@ -313,10 +319,16 @@ class AudioEngine {
     // Recording functionality
     async startRecording() {
         try {
-            // Reuse existing stream if available
-            if (!this.mediaStream || !this.mediaStream.active) {
-                this.mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            // CRITICAL FIX: Always request fresh microphone access
+            // This ensures browser asks for permission each time
+            // and prevents stale stream issues
+            if (this.mediaStream) {
+                // Stop any existing stream first
+                this.mediaStream.getTracks().forEach(track => track.stop());
             }
+
+            // Request fresh microphone access
+            this.mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
             this.mediaRecorder = new MediaRecorder(this.mediaStream);
             this.recordedChunks = [];
@@ -483,6 +495,16 @@ class AudioEngine {
 
     async stopSpeechRecognition() {
         this.recognitionActive = false;
+        this.recognitionRunning = false; // CRITICAL FIX: Reset running flag
+
+        // Stop recognition properly
+        if (this.recognition) {
+            try {
+                this.recognition.stop();
+            } catch (e) {
+                // Already stopped, ignore
+            }
+        }
 
         // Stop recording and get audio
         const audioBlob = await this.stopRecording();
@@ -494,6 +516,17 @@ class AudioEngine {
         }
 
         this.currentOnResult = null;
+
+        // CRITICAL FIX: Reset resultStartIndex for next session
+        this.resultStartIndex = 0;
+
+        // CRITICAL FIX: Destroy and recreate recognition instance to ensure clean state
+        if (this.recognition) {
+            this.recognition.onresult = null;
+            this.recognition.onerror = null;
+            this.recognition.onend = null;
+            this.recognition = null;
+        }
     }
 
     // Sleep Timer
