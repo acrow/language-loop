@@ -74,8 +74,7 @@
             <header class="app-header">
                 <button id="language-settings-btn" class="btn btn-icon" title="Language Settings">🌐</button>
                 <h1>📚 <span data-i18n="playlist.playlists">My Playlists</span></h1>
-                <button id="add-playlist-btn" class="btn btn-icon" data-i18n-title="playlist.createPlaylist"
-                    title="Create Playlist">+</button>
+                <button id="library-menu-btn" class="btn btn-icon" title="Library Menu">⋮</button>
             </header>
 
             <div id="playlists-container" class="playlists-grid">
@@ -204,6 +203,9 @@
                 </div>
             </div>
         </div>
+
+        <!-- Hidden file inputs -->
+        <input type="file" id="import-text-file-input" accept=".txt" style="display: none;">
 
         <!-- Sentence Editor Modal -->
         <div id="editor-modal" class="modal hidden">
@@ -398,6 +400,21 @@
                     </div>
 
                     <div class="form-group">
+                        <label for="edit-target-lang" data-i18n="playlist.targetLanguage">Target Language</label>
+                        <select id="edit-target-lang">
+                            <option value="en-US">English (US)</option>
+                            <option value="zh-CN">Chinese (Simplified)</option>
+                            <option value="ja-JP">Japanese</option>
+                            <option value="es-ES">Spanish</option>
+                            <option value="fr-FR">French</option>
+                            <option value="de-DE">German</option>
+                            <option value="ko-KR">Korean</option>
+                            <option value="it-IT">Italian</option>
+                        </select>
+                        <small>⚠️ Changing language will ask if you want to auto-translate all sentences</small>
+                    </div>
+
+                    <div class="form-group">
                         <label data-i18n="playlist.icon">Choose Icon</label>
                         <div class="icon-picker">
                             <button type="button" class="icon-option" data-icon="📚">📚</button>
@@ -435,18 +452,89 @@
             </div>
         </div>
 
-        <!-- Playlist Menu Modal -->
+        <!-- Library Menu Modal (App-level actions) -->
+        <div id="library-menu-modal" class="modal hidden">
+            <div class="modal-content modal-menu">
+                <button id="add-playlist-btn" class="menu-item">➕ Create Playlist</button>
+                <button id="import-playlist-btn" class="menu-item">📥 Import Playlist</button>
+                <button id="import-text-btn" class="menu-item">📄 Import from Text</button>
+                <button id="close-library-menu-btn" class="menu-item">✖️ Close</button>
+            </div>
+        </div>
+
+        <!-- Playlist Menu Modal (Playlist-specific actions) -->
         <div id="playlist-menu-modal" class="modal hidden">
             <div class="modal-content modal-menu">
-                <button id="writing-test-btn" class="menu-item" data-i18n="playlist.writingTestMenu"></button>
-                <button id="speaking-test-btn" class="menu-item" data-i18n="playlist.speakingTestMenu"></button>
-                <button id="edit-playlist-btn" class="menu-item" data-i18n="playlist.editPlaylistMenu"></button>
-                <button id="settings-btn" class="menu-item" data-i18n="playlist.settingsMenu"></button>
-                <button id="export-playlist-btn" class="menu-item" data-i18n="playlist.exportPlaylistMenu"></button>
-                <button id="import-playlist-btn" class="menu-item" data-i18n="playlist.importPlaylistMenu"></button>
-                <button id="delete-playlist-btn" class="menu-item danger"
-                    data-i18n="playlist.deletePlaylistMenu"></button>
-                <button id="close-menu-btn" class="menu-item" data-i18n="playlist.closeMenu"></button>
+                <button id="writing-test-btn" class="menu-item">✍️ Writing Test</button>
+                <button id="speaking-test-btn" class="menu-item">🎤 Speaking Test</button>
+                <button id="edit-playlist-btn" class="menu-item">✏️ Edit Playlist</button>
+                <button id="duplicate-playlist-btn" class="menu-item">📋 Duplicate Playlist</button>
+                <button id="settings-btn" class="menu-item">⚙️ Settings</button>
+                <button id="export-playlist-btn" class="menu-item">📤 Export Playlist</button>
+                <button id="export-text-btn" class="menu-item">📄 Export as Text</button>
+                <button id="delete-playlist-btn" class="menu-item danger">🗑️ Delete Playlist</button>
+                <button id="close-menu-btn" class="menu-item">✖️ Close</button>
+            </div>
+        </div>
+
+        <!-- Custom Dialog Modal -->
+        <div id="custom-dialog-modal" class="modal hidden">
+            <div class="modal-content" style="max-width: 400px;">
+                <div class="modal-header">
+                    <h2 id="dialog-title">Notice</h2>
+                </div>
+                <div class="modal-body">
+                    <p id="dialog-message" style="margin-bottom: 20px; line-height: 1.6;"></p>
+                    <div id="dialog-input-group" class="form-group" style="display: none;">
+                        <input type="text" id="dialog-input" class="form-control" style="width: 100%;">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button id="dialog-cancel-btn" class="btn btn-secondary">Cancel</button>
+                    <button id="dialog-ok-btn" class="btn btn-primary">OK</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Import Text Language Selection Modal -->
+        <div id="import-text-lang-modal" class="modal hidden">
+            <div class="modal-content" style="max-width: 450px;">
+                <div class="modal-header">
+                    <h2>Select Languages for Import</h2>
+                    <button id="close-import-text-lang-btn" class="btn btn-icon" title="Close">×</button>
+                </div>
+                <form id="import-text-lang-form">
+                    <div class="form-group">
+                        <label for="import-target-lang">Target Language</label>
+                        <select id="import-target-lang" required>
+                            <option value="en-US">English (US)</option>
+                            <option value="zh-CN">Chinese (Simplified)</option>
+                            <option value="ja-JP">Japanese</option>
+                            <option value="es-ES">Spanish</option>
+                            <option value="fr-FR">French</option>
+                            <option value="de-DE">German</option>
+                            <option value="ko-KR">Korean</option>
+                            <option value="it-IT">Italian</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="import-native-lang">Native Language</label>
+                        <select id="import-native-lang" required>
+                            <option value="en-US">English (US)</option>
+                            <option value="zh-CN" selected>Chinese (Simplified)</option>
+                            <option value="ja-JP">Japanese</option>
+                            <option value="es-ES">Spanish</option>
+                            <option value="fr-FR">French</option>
+                            <option value="de-DE">German</option>
+                            <option value="ko-KR">Korean</option>
+                            <option value="it-IT">Italian</option>
+                        </select>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" id="cancel-import-text-lang-btn" class="btn btn-secondary">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Import</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -460,6 +548,7 @@
     <!-- Toast Notification Container -->
     <div id="toast-container"></div>
 
+    <script src="js/dialog.js"></script>
     <script src="js/storage.js"></script>
     <script src="js/i18n.js"></script>
     <script src="js/translation.js"></script>

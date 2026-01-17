@@ -343,7 +343,7 @@ class AudioEngine {
             return true;
         } catch (error) {
             console.error('Recording error:', error);
-            alert('Could not access microphone. Please check permissions.');
+            await dialog.alert('Could not access microphone. Please check permissions.', 'Microphone Error');
             return false;
         }
     }
@@ -400,7 +400,7 @@ class AudioEngine {
                     '• Google Chrome (recommended)\n' +
                     '• Microsoft Edge\n' +
                     '• Safari (limited language support)';
-                alert(message);
+                await dialog.alert(message);
                 return false;
             }
 
@@ -415,7 +415,7 @@ class AudioEngine {
             // Validate and update language for this session
             const langCode = this.validateLanguageCode(lang);
             if (!langCode) {
-                alert(`Language code "${lang}" may not be supported for speech recognition.\n\n` +
+                await dialog.alert(`Language code "${lang}" may not be supported for speech recognition.\n\n` +
                     'Supported languages include:\n' +
                     '• English (en-US)\n' +
                     '• Chinese (zh-CN)\n' +
@@ -462,13 +462,13 @@ class AudioEngine {
             };
 
             this.recognition.onend = () => {
-                // Restart if still supposed to be active (for continuous mode)
+                // CRITICAL FIX: Don't restart - let stopSpeechRecognition handle cleanup
+                // Restarting here can cause race conditions and lost transcripts
+                // If recognition ends naturally, it means user stopped speaking
+                // We should stop and process the results
                 if (this.recognitionActive) {
-                    try {
-                        this.recognition.start();
-                    } catch (e) {
-                        // Already started, ignore
-                    }
+                    // Recognition ended while still active - stop cleanly
+                    this.stopSpeechRecognition();
                 }
             };
 
@@ -488,7 +488,7 @@ class AudioEngine {
             return true;
         } catch (error) {
             console.error('Speech recognition error:', error);
-            alert('Could not start speech recognition. Please check permissions.');
+            await dialog.alert('Could not start speech recognition. Please check permissions.', 'Recognition Error');
             return false;
         }
     }

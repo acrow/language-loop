@@ -21,6 +21,7 @@ class UIManager {
 
         // Library view
         document.getElementById('add-playlist-btn')?.addEventListener('click', () => {
+            this.hideModal('library-menu-modal');
             this.showCreatePlaylistModal();
         });
 
@@ -148,8 +149,20 @@ class UIManager {
             this.exportPlaylist();
         });
 
+        document.getElementById('export-text-btn')?.addEventListener('click', () => {
+            this.exportPlaylistAsText();
+        });
+
         document.getElementById('import-playlist-btn')?.addEventListener('click', () => {
             this.importPlaylist();
+        });
+
+        document.getElementById('import-text-btn')?.addEventListener('click', () => {
+            this.importPlaylistFromText();
+        });
+
+        document.getElementById('duplicate-playlist-btn')?.addEventListener('click', () => {
+            this.duplicatePlaylist();
         });
 
         document.getElementById('delete-playlist-btn')?.addEventListener('click', () => {
@@ -160,9 +173,41 @@ class UIManager {
             this.hideModal('playlist-menu-modal');
         });
 
+        document.getElementById('close-library-menu-btn')?.addEventListener('click', () => {
+            this.hideModal('library-menu-modal');
+        });
+
+        // Library menu button
+        document.getElementById('library-menu-btn')?.addEventListener('click', () => {
+            this.showModal('library-menu-modal');
+        });
+
         // Import file input
         document.getElementById('import-file-input')?.addEventListener('change', (e) => {
             this.handleImportFile(e.target.files[0]);
+        });
+
+        // Import text file input
+        document.getElementById('import-text-file-input')?.addEventListener('change', (e) => {
+            this.handleImportTextFile(e.target.files[0]);
+        });
+
+        // Import text language selection modal
+        document.getElementById('close-import-text-lang-btn')?.addEventListener('click', () => {
+            this.hideModal('import-text-lang-modal');
+            this.pendingTextImportFile = null;
+            document.getElementById('import-text-file-input').value = '';
+        });
+
+        document.getElementById('cancel-import-text-lang-btn')?.addEventListener('click', () => {
+            this.hideModal('import-text-lang-modal');
+            this.pendingTextImportFile = null;
+            document.getElementById('import-text-file-input').value = '';
+        });
+
+        document.getElementById('import-text-lang-form')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.processTextImport();
         });
 
         // Playlist creation modal
@@ -340,10 +385,13 @@ class UIManager {
             'ja-JP': 'Japanese',
             'es-ES': 'Spanish',
             'fr-FR': 'French',
-            'de-DE': 'German'
+            'de-DE': 'German',
+            'ko-KR': 'Korean',
+            'it-IT': 'Italian'
         };
 
         const targetLangName = langNames[playlist.targetLang] || playlist.targetLang;
+        const nativeLangName = langNames[playlist.nativeLang] || playlist.nativeLang;
         const icon = playlist.icon || '📚';
         const description = playlist.description || '';
 
@@ -353,7 +401,7 @@ class UIManager {
                 <h3>${this.escapeHtml(playlist.name)}</h3>
                 ${description ? `<p class="playlist-description">${this.escapeHtml(description)}</p>` : ''}
                 <div class="playlist-meta">
-                    <span class="language-badge">Target: ${targetLangName}</span>
+                    <span class="language-badge">${nativeLangName} → ${targetLangName}</span>
                     <span class="sentence-count">${sentenceCount} sentence${sentenceCount !== 1 ? 's' : ''}</span>
                 </div>
             </div>
@@ -562,7 +610,7 @@ class UIManager {
         const description = document.getElementById('playlist-description').value.trim();
 
         if (!name) {
-            alert('Please enter a playlist name');
+            await dialog.alert('Please enter a playlist name', 'Validation Error');
             return;
         }
 
@@ -572,9 +620,10 @@ class UIManager {
             await this.renderPlaylists();
             this.showPlayerView(id);
         } catch (error) {
-            alert('Error creating playlist: ' + error.message);
+            await dialog.alert('Error creating playlist: ' + error.message, 'Error');
         }
     }
+
 
     async showEditPlaylistModal() {
         this.hideModal('playlist-menu-modal');
@@ -583,6 +632,7 @@ class UIManager {
 
         // Set current values
         document.getElementById('edit-playlist-name').value = playlist.name || '';
+        document.getElementById('edit-target-lang').value = playlist.targetLang || 'en-US';
         document.getElementById('edit-playlist-icon').value = playlist.icon || '📚';
         document.getElementById('edit-playlist-description').value = playlist.description || '';
 
@@ -601,13 +651,50 @@ class UIManager {
         const name = document.getElementById('edit-playlist-name').value.trim();
         const icon = document.getElementById('edit-playlist-icon').value.trim() || '📚';
         const description = document.getElementById('edit-playlist-description').value.trim();
+        const newTargetLang = document.getElementById('edit-target-lang').value;
 
         if (!name) {
-            alert('Please enter a playlist name');
+            await dialog.alert('Please enter a playlist name', 'Validation Error');
             return;
         }
 
         try {
+            // Get current playlist to check if language changed
+            const playlist = await playlistManager.getPlaylist(playlistManager.currentPlaylistId);
+            const languageChanged = playlist.targetLang !== newTargetLang;
+
+            // If language changed, ask about auto-translation
+            if (languageChanged) {
+                const sentences = await storage.getSentencesByPlaylist(playlistManager.currentPlaylistId);
+
+                if (sentences.length > 0) {
+                    const autoTranslate = await dialog.confirm(
+                        `You are changing the target language from ${playlist.targetLang} to ${newTargetLang}.\n\n` +
+                        `Would you like to automatically translate all ${sentences.length} sentence(s) to the new language?\n\n` +
+                        `This will use an online translation service.`
+                    );
+
+                    if (autoTranslate) {
+                        this.showToast('Translating sentences... Please wait.');
+
+                        // Use the changePlaylistLanguage method
+                        await playlistManager.changePlaylistLanguage(
+                            playlistManager.currentPlaylistId,
+                            newTargetLang,
+                            true
+                        );
+                    } else {
+                        // Just update language without translating
+                        await playlistManager.changePlaylistLanguage(
+                            playlistManager.currentPlaylistId,
+                            newTargetLang,
+                            false
+                        );
+                    }
+                }
+            }
+
+            // Update playlist metadata
             await playlistManager.updatePlaylist(playlistManager.currentPlaylistId, {
                 name,
                 icon,
@@ -622,21 +709,21 @@ class UIManager {
 
             this.showToast(`Playlist "${name}" updated successfully!`);
         } catch (error) {
-            alert('Error updating playlist: ' + error.message);
+            await dialog.alert('Error updating playlist: ' + error.message, 'Error');
         }
     }
 
     async renamePlaylist() {
         this.hideModal('playlist-menu-modal');
         const playlist = await playlistManager.getPlaylist(playlistManager.currentPlaylistId);
-        const newName = prompt('Enter new name:', playlist.name);
+        const newName = await dialog.prompt('Enter new name:', 'Rename Playlist', playlist.name);
 
         if (newName && newName.trim()) {
             try {
                 await playlistManager.renamePlaylist(playlistManager.currentPlaylistId, newName);
                 document.getElementById('current-playlist-name').textContent = newName;
             } catch (error) {
-                alert('Error renaming playlist: ' + error.message);
+                await dialog.alert('Error renaming playlist: ' + error.message, 'Error');
             }
         }
     }
@@ -644,12 +731,12 @@ class UIManager {
     async deletePlaylist() {
         this.hideModal('playlist-menu-modal');
 
-        if (confirm('Are you sure you want to delete this playlist? This cannot be undone.')) {
+        if (await dialog.confirm('Are you sure you want to delete this playlist? This cannot be undone.', 'Confirm Delete')) {
             try {
                 await playlistManager.deletePlaylist(playlistManager.currentPlaylistId);
                 this.showLibraryView();
             } catch (error) {
-                alert('Error deleting playlist: ' + error.message);
+                await dialog.alert('Error deleting playlist: ' + error.message, 'Error');
             }
         }
     }
@@ -660,7 +747,7 @@ class UIManager {
         try {
             await playlistManager.exportPlaylist(playlistManager.currentPlaylistId);
         } catch (error) {
-            alert('Error exporting playlist: ' + error.message);
+            await dialog.alert('Error exporting playlist: ' + error.message, 'Error');
         }
     }
 
@@ -674,7 +761,7 @@ class UIManager {
 
         try {
             // Ask if user wants auto-translation
-            const autoTranslate = confirm(
+            const autoTranslate = await dialog.confirm(
                 'Would you like to automatically translate any missing translations in this playlist?\n\n' +
                 'This will use an online translation service for sentences without native language text.'
             );
@@ -682,20 +769,132 @@ class UIManager {
             const playlistId = await playlistManager.importPlaylist(file, autoTranslate);
 
             if (autoTranslate) {
-                alert('Playlist imported and translated successfully!');
+                await dialog.alert('Playlist imported and translated successfully!', 'Success');
             } else {
-                alert('Playlist imported successfully!');
+                await dialog.alert('Playlist imported successfully!', 'Success');
             }
 
             if (this.currentView === 'library-view') {
                 await this.renderPlaylists();
             }
         } catch (error) {
-            alert('Error importing playlist: ' + error.message);
+            await dialog.alert('Error importing playlist: ' + error.message, 'Error');
         }
 
         // Reset file input
         document.getElementById('import-file-input').value = '';
+    }
+
+    async exportPlaylistAsText() {
+        this.hideModal('playlist-menu-modal');
+
+        try {
+            await playlistManager.exportAsText(playlistManager.currentPlaylistId);
+            this.showToast('Playlist exported as text!');
+        } catch (error) {
+            await dialog.alert('Error exporting playlist: ' + error.message, 'Error');
+        }
+    }
+
+    importPlaylistFromText() {
+        this.hideModal('library-menu-modal');
+        this.hideModal('playlist-menu-modal');
+
+        // Open file picker
+        document.getElementById('import-text-file-input').click();
+    }
+
+    async handleImportTextFile(file) {
+        if (!file) return;
+
+        // Store file
+        this.pendingTextImportFile = file;
+
+        // Try to detect languages from file content
+        try {
+            const text = await file.text();
+            const lines = text.trim().split('\n').filter(line => line.trim());
+
+            // Simple language detection based on character sets
+            let detectedTargetLang = 'en-US';
+            let detectedNativeLang = 'zh-CN';
+
+            if (lines.length > 0) {
+                const firstLine = lines[0];
+
+                // Check if contains Chinese characters
+                if (/[\u4e00-\u9fa5]/.test(firstLine)) {
+                    detectedTargetLang = 'zh-CN';
+                    detectedNativeLang = 'en-US';
+                }
+                // Check if contains Japanese characters
+                else if (/[\u3040-\u309f\u30a0-\u30ff]/.test(firstLine)) {
+                    detectedTargetLang = 'ja-JP';
+                    detectedNativeLang = 'en-US';
+                }
+                // Check if contains Korean characters
+                else if (/[\uac00-\ud7af]/.test(firstLine)) {
+                    detectedTargetLang = 'ko-KR';
+                    detectedNativeLang = 'en-US';
+                }
+            }
+
+            // Set detected values as defaults
+            document.getElementById('import-target-lang').value = detectedTargetLang;
+            document.getElementById('import-native-lang').value = detectedNativeLang;
+
+        } catch (error) {
+            console.error('Error detecting language:', error);
+            // Use defaults if detection fails
+            document.getElementById('import-target-lang').value = 'en-US';
+            document.getElementById('import-native-lang').value = 'zh-CN';
+        }
+
+        // Show language selection modal
+        this.showModal('import-text-lang-modal');
+    }
+
+    async processTextImport() {
+        const file = this.pendingTextImportFile;
+        if (!file) return;
+
+        const targetLang = document.getElementById('import-target-lang').value;
+        const nativeLang = document.getElementById('import-native-lang').value;
+
+        try {
+            const playlistId = await playlistManager.importFromText(file, targetLang, nativeLang);
+
+            this.showToast('Playlist imported from text successfully!');
+
+            // Reload playlist list
+            if (this.currentView === 'library-view') {
+                await this.renderPlaylists();
+            }
+
+            this.hideModal('import-text-lang-modal');
+        } catch (error) {
+            await dialog.alert('Error importing text file: ' + error.message, 'Error');
+        }
+
+        // Reset file input
+        document.getElementById('import-text-file-input').value = '';
+        this.pendingTextImportFile = null;
+    }
+
+    async duplicatePlaylist() {
+        this.hideModal('playlist-menu-modal');
+
+        try {
+            const newId = await playlistManager.duplicatePlaylist(playlistManager.currentPlaylistId);
+            this.showToast('Playlist duplicated successfully!');
+
+            // Reload playlist list
+            if (this.currentView === 'library-view') {
+                await this.renderPlaylists();
+            }
+        } catch (error) {
+            await dialog.alert('Error duplicating playlist: ' + error.message, 'Error');
+        }
     }
 
     // Sentence Editor
@@ -721,7 +920,7 @@ class UIManager {
         const addAnother = document.getElementById('add-another-checkbox').checked;
 
         if (!targetText || !nativeText) {
-            alert('Please fill in both sentences');
+            await dialog.alert('Please fill in both sentences', 'Validation Error');
             return;
         }
 
@@ -753,12 +952,12 @@ class UIManager {
                 this.hideModal('editor-modal');
             }
         } catch (error) {
-            alert('Error saving sentence: ' + error.message);
+            await dialog.alert('Error saving sentence: ' + error.message, 'Error');
         }
     }
 
     async confirmDeleteSentence(sentenceId) {
-        if (confirm('Delete this sentence?')) {
+        if (await dialog.confirm('Delete this sentence?', 'Confirm Delete')) {
             try {
                 await playlistManager.deleteSentence(sentenceId);
                 audioEngine.loadPlaylist(playlistManager.currentSentences);
@@ -775,7 +974,7 @@ class UIManager {
                     document.getElementById('current-position').textContent = '0';
                 }
             } catch (error) {
-                alert('Error deleting sentence: ' + error.message);
+                await dialog.alert('Error deleting sentence: ' + error.message, 'Error');
             }
         }
     }
@@ -847,13 +1046,13 @@ class UIManager {
         const targetText = document.getElementById('target-text-input').value.trim();
 
         if (!targetText) {
-            alert('Please enter the target language sentence first');
+            await dialog.alert('Please enter the target language sentence first', 'Validation Error');
             return;
         }
 
         const playlist = await playlistManager.getPlaylist(playlistManager.currentPlaylistId);
         if (!playlist) {
-            alert('Error: Could not load playlist information');
+            await dialog.alert('Error: Could not load playlist information', 'Error');
             return;
         }
 
@@ -872,7 +1071,7 @@ class UIManager {
 
             document.getElementById('native-text-input').value = translation;
         } catch (error) {
-            alert('Translation failed. Please enter translation manually.');
+            await dialog.alert('Translation failed. Please enter translation manually.', 'Translation Error');
         } finally {
             btn.textContent = originalText;
             btn.disabled = false;
@@ -891,7 +1090,7 @@ class UIManager {
 
         const playlist = await playlistManager.getPlaylist(playlistManager.currentPlaylistId);
         if (!playlist) {
-            alert('Error: Could not load playlist information');
+            await dialog.alert('Error: Could not load playlist information', 'Error');
             return;
         }
 
@@ -955,7 +1154,7 @@ class UIManager {
         // Get current playlist settings
         const playlist = await playlistManager.getPlaylist(playlistManager.currentPlaylistId);
         if (!playlist) {
-            alert('Please open a playlist first');
+            await dialog.alert('Please open a playlist first', 'Notice');
             return;
         }
 
@@ -1162,7 +1361,7 @@ class UIManager {
         const userAnswer = document.getElementById('test-answer-input').value.trim();
 
         if (!userAnswer) {
-            alert('Please enter your answer');
+            await dialog.alert('Please enter your answer', 'Validation Error');
             return;
         }
 

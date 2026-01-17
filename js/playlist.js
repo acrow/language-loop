@@ -44,6 +44,137 @@ class PlaylistManager {
         }
     }
 
+    async duplicatePlaylist(id) {
+        // Get original playlist and sentences
+        const playlist = await storage.getPlaylist(id);
+        const sentences = await storage.getSentencesByPlaylist(id);
+
+        // Create new playlist with " (Copy)" suffix
+        const newName = `${playlist.name} (Copy)`;
+        const newId = await this.createPlaylist(
+            newName,
+            playlist.targetLang,
+            playlist.nativeLang,
+            playlist.icon,
+            playlist.description
+        );
+
+        // Copy all sentences
+        for (const sentence of sentences) {
+            await this.addSentence(newId, {
+                targetText: sentence.targetText,
+                nativeText: sentence.nativeText,
+                customAudio: sentence.customAudio
+            });
+        }
+
+        // Copy settings
+        if (playlist.settings) {
+            await storage.updatePlaylist(newId, { settings: playlist.settings });
+        }
+
+        return newId;
+    }
+
+    async exportAsText(playlistId) {
+        const playlist = await storage.getPlaylist(playlistId);
+        const sentences = await storage.getSentencesByPlaylist(playlistId);
+
+        // Format: Target\nNative\nTarget\nNative (no empty lines)
+        const textLines = [];
+        for (const sentence of sentences) {
+            textLines.push(sentence.targetText);
+            textLines.push(sentence.nativeText);
+        }
+
+        const text = textLines.join('\n');
+        const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+
+        const filename = `${playlist.name.replace(/[^a-z0-9]/gi, '_')}_${Date.now()}.txt`;
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+
+        URL.revokeObjectURL(url);
+    }
+
+    async importFromText(file, targetLang, nativeLang) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+
+            reader.onload = async (event) => {
+                try {
+                    const text = event.target.result;
+                    const lines = text.split('\n').map(line => line.trim()).filter(line => line);
+
+                    if (lines.length === 0 || lines.length % 2 !== 0) {
+                        throw new Error('Invalid text format. Each sentence pair must have target and native text.');
+                    }
+
+                    // Create playlist
+                    const playlistName = file.name.replace(/\.txt$/i, '');
+                    const playlistId = await this.createPlaylist(playlistName, targetLang, nativeLang);
+
+                    // Add sentences (pairs of lines)
+                    for (let i = 0; i < lines.length; i += 2) {
+                        await this.addSentence(playlistId, {
+                            targetText: lines[i],
+                            nativeText: lines[i + 1]
+                        });
+                    }
+
+                    resolve(playlistId);
+                } catch (error) {
+                    reject(error);
+                }
+            };
+
+            reader.onerror = () => reject(reader.error);
+            reader.readAsText(file, 'UTF-8');
+        });
+    }
+
+    async changePlaylistLanguage(playlistId, newTargetLang, autoTranslate = false) {
+        const playlist = await storage.getPlaylist(playlistId);
+        const sentences = await storage.getSentencesByPlaylist(playlistId);
+
+        // Update playlist language
+        await storage.updatePlaylist(playlistId, { targetLang: newTargetLang });
+
+        if (autoTranslate && sentences.length > 0) {
+            // Translate all sentences to new language
+            // IMPORTANT: Translate from native text (source of truth) to new target language
+            // This is more accurate than translating from old target language
+            for (const sentence of sentences) {
+                try {
+                    const translatedText = await translationService.translate(
+                        sentence.nativeText,  // Source: native text (more accurate)
+                        playlist.nativeLang,  // From: native language
+                        newTargetLang         // To: new target language
+                    );
+
+                    await this.updateSentence(sentence.id, {
+                        targetText: translatedText,
+                        targetLang: newTargetLang
+                    });
+                } catch (error) {
+                    console.error(`Failed to translate sentence ${sentence.id}:`, error);
+                    // Continue with other sentences even if one fails
+                }
+            }
+        } else {
+            // Just update language code without translating
+            for (const sentence of sentences) {
+                await this.updateSentence(sentence.id, { targetLang: newTargetLang });
+            }
+        }
+
+        return true;
+    }
+
     async loadPlaylist(id) {
         this.currentPlaylistId = id;
         this.currentSentences = await storage.getSentencesByPlaylist(id);

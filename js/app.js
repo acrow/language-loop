@@ -17,6 +17,9 @@ class App {
             // Initialize i18n
             await i18n.init();
 
+            // Initialize dialog system
+            dialog.init();
+
             // Initialize UI
             ui.init();
 
@@ -32,7 +35,7 @@ class App {
             this.initialized = true;
         } catch (error) {
             console.error('App initialization error:', error);
-            alert('Error initializing app. Please refresh the page.');
+            await dialog.alert('Error initializing app. Please refresh the page.', 'Error');
         }
     }
 

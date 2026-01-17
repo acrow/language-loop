@@ -21,7 +21,7 @@ class TestManager {
         this.sentences = await storage.getSentencesByPlaylist(playlistId);
 
         if (this.sentences.length === 0) {
-            alert('No sentences in this playlist to test!');
+            await dialog.alert('No sentences in this playlist to test!', 'Notice');
             return false;
         }
 
