@@ -1,14 +1,14 @@
 ﻿// Internationalization Manager
 class I18nManager {
     constructor() {
-        this.currentLang = 'en';
+        this.currentLang = 'en-US';
         this.translations = {};
-        this.fallbackLang = 'en';
+        this.fallbackLang = 'en-US';
     }
 
     async init() {
         // Load saved language preference
-        const savedLang = await storage.getSetting('interfaceLanguage', 'en');
+        const savedLang = await storage.getSetting('interfaceLanguage', 'en-US');
         await this.loadLanguage(savedLang);
     }
 
@@ -119,9 +119,14 @@ class I18nManager {
 
     getAvailableLanguages() {
         return [
-            { code: 'en', name: 'English' },
-            { code: 'zh', name: '中文' },
-            { code: 'ja', name: '日本語' }
+            { code: 'en-US', name: 'English' },
+            { code: 'zh-CN', name: '中文' },
+            { code: 'ja-JP', name: '日本語' },
+            { code: 'es-ES', name: 'Español' },
+            { code: 'fr-FR', name: 'Français' },
+            { code: 'de-DE', name: 'Deutsch' },
+            { code: 'ko-KR', name: '한국어' },
+            { code: 'it-IT', name: 'Italiano' }
         ];
     }
 }

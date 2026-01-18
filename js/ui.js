@@ -604,9 +604,12 @@ class UIManager {
         document.getElementById('playlist-name-input').value = '';
 
         // Load global language settings as defaults
-        const { targetLang, nativeLang } = await welcomeManager.getGlobalLanguages();
+        const { targetLang } = await welcomeManager.getGlobalLanguages();
         document.getElementById('playlist-target-lang').value = targetLang;
-        document.getElementById('playlist-native-lang').value = nativeLang;
+
+        // Use current interface language as default native language
+        const interfaceLang = i18n.getCurrentLanguage();
+        document.getElementById('playlist-native-lang').value = interfaceLang;
 
         this.showModal('create-playlist-modal');
     }
