@@ -53,13 +53,27 @@
     "duplicatePlaylistMenu": "プレイリストを複製",
     "importTextMenu": "テキストからインポート",
     "exportTextMenu": "テキストとしてエクスポート",
-    "changeLanguageWarning": "言語を変更すると、すべての文章を自動翻訳するかどうかを尋ねられます"
+    "emptyPlaylist": "文章がありません",
+    "emptyPlaylistDesc": "最初の文章を追加して練習を始めてください",
+    "changeLanguageWarning": "言語を変更すると、すべての文章を自動翻訳するかどうかを尋ねられます",
+    "targetLanguageDesc": "学習言語",
+    "nativeLanguageDesc": "母国語",
+    "iconDesc": "プレイリストを表すアイコン",
+    "descriptionDesc": "プレイリストの説明"
   },
   "sentence": {
     "sentences": "文章",
     "addSentence": "文章を追加",
     "targetText": "目標言語の文章",
-    "nativeText": "翻訳"
+    "nativeText": "翻訳",
+    "voiceInput": "音声入力",
+    "autoTranslate": "自動翻訳",
+    "customAudio": "カスタム音声",
+    "recording": "録音中",
+    "recordBtn": "録音",
+    "reRecordBtn": "再録音",
+    "addAnother": "保存後、別の文章を追加する",
+    "addAnotherDesc": "このフォームを保持して、複数の文章を迅速に追加できます"
   },
   "settings": {
     "settings": "設定",

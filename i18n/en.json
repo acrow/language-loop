@@ -53,13 +53,27 @@
     "duplicatePlaylistMenu": "Duplicate Playlist",
     "importTextMenu": "Import from Text",
     "exportTextMenu": "Export as Text",
-    "changeLanguageWarning": "Changing language will ask if you want to auto-translate all sentences"
+    "emptyPlaylist": "No sentences yet",
+    "emptyPlaylistDesc": "Add your first sentence to start practicing",
+    "changeLanguageWarning": "Changing language will ask if you want to auto-translate all sentences",
+    "targetLanguageDesc": "The language you want to learn",
+    "nativeLanguageDesc": "Your native language for translations",
+    "iconDesc": "Choose an emoji to represent this playlist",
+    "descriptionDesc": "Brief description of this playlist"
   },
   "sentence": {
     "sentences": "Sentences",
     "addSentence": "Add Sentence",
     "targetText": "Target Language Sentence",
-    "nativeText": "Translation"
+    "nativeText": "Translation",
+    "voiceInput": "Voice Input",
+    "autoTranslate": "Auto Translate",
+    "customAudio": "Custom Audio",
+    "recording": "Recording",
+    "recordBtn": "Record",
+    "reRecordBtn": "Re-record",
+    "addAnother": "Add another sentence after saving",
+    "addAnotherDesc": "Keep this form open to quickly add multiple sentences"
   },
   "settings": {
     "settings": "Settings",

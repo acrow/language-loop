@@ -53,13 +53,27 @@
     "duplicatePlaylistMenu": "复制播放列表",
     "importTextMenu": "从文本导入",
     "exportTextMenu": "导出为文本",
-    "changeLanguageWarning": "变更语言会提示是否自动翻译所有句子"
+    "emptyPlaylist": "还没有句子",
+    "emptyPlaylistDesc": "添加你的第一个句子开始练习",
+    "changeLanguageWarning": "变更语言会提示是否自动翻译所有句子",
+    "targetLanguageDesc": "学习语言",
+    "nativeLanguageDesc": "母语",
+    "iconDesc": "播放列表的图标",
+    "descriptionDesc": "播放列表的描述"
   },
   "sentence": {
     "sentences": "句子",
     "addSentence": "添加句子",
     "targetText": "目标语言句子",
-    "nativeText": "翻译"
+    "voiceInput": "语音输入",
+    "autoTranslate": "自动翻译",
+    "customAudio": "自定义音频",
+    "recording": "录音中",
+    "nativeText": "翻译",
+    "recordBtn": "录音",
+    "reRecordBtn": "再录音",
+    "addAnother": "保存后,继续添加下一条",
+    "addAnotherDesc": "保持这个表单打开,可以快速添加多个句子"
   },
   "settings": {
     "settings": "设置",

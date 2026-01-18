@@ -992,8 +992,8 @@ class UIManager {
         const success = await audioEngine.startRecording();
         if (success) {
             this.isRecording = true;
-            document.getElementById('record-btn').textContent = '⏹️ Stop';
-            document.getElementById('recording-status').textContent = 'Recording...';
+            document.getElementById('record-btn').textContent = '⏹️' + i18n.t('common.stop');
+            document.getElementById('recording-status').textContent = i18n.t('sentence.recording');
             document.getElementById('recording-status').classList.add('recording');
         }
     }
@@ -1013,13 +1013,13 @@ class UIManager {
         const status = document.getElementById('recording-status');
 
         if (this.recordedAudio) {
-            recordBtn.textContent = '🎙️ Re-record';
+            recordBtn.textContent = '🎙️ ' + i18n.t('sentence.reRecordBtn');
             playBtn.classList.remove('hidden');
             deleteBtn.classList.remove('hidden');
             status.textContent = 'Custom audio ready';
             status.classList.remove('recording');
         } else {
-            recordBtn.textContent = '🎙️ Record';
+            recordBtn.textContent = '🎙️ ' + i18n.t('sentence.recordBtn');
             playBtn.classList.add('hidden');
             deleteBtn.classList.add('hidden');
             status.textContent = '';
