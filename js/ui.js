@@ -9,8 +9,29 @@ class UIManager {
     }
 
     init() {
+        this.populateLanguageDropdowns();
         this.setupEventListeners();
         this.setupAudioEngineListeners();
+    }
+
+    populateLanguageDropdowns() {
+        // Populate all language select elements
+        const selects = [
+            { id: 'global-target-lang', useNativeName: false },
+            { id: 'global-native-lang', useNativeName: true },
+            { id: 'playlist-target-lang', useNativeName: false },
+            { id: 'playlist-native-lang', useNativeName: false },
+            { id: 'edit-target-lang', useNativeName: false },
+            { id: 'import-target-lang', useNativeName: false },
+            { id: 'import-native-lang', useNativeName: false }
+        ];
+
+        selects.forEach(({ id, useNativeName }) => {
+            const element = document.getElementById(id);
+            if (element) {
+                populateLanguageSelect(element, useNativeName);
+            }
+        });
     }
 
     setupEventListeners() {
@@ -30,8 +51,10 @@ class UIManager {
         });
 
         // Player view
-        document.getElementById('back-to-library-btn')?.addEventListener('click', () => {
+        document.getElementById('back-to-library-btn')?.addEventListener('click', async () => {
             audioEngine.stop();
+            playlistManager.currentPlaylistId = null;
+            await storage.deleteSetting('lastPlaylistId');
             this.showLibraryView();
         });
 
@@ -333,6 +356,8 @@ class UIManager {
     }
 
     async showLibraryView() {
+        // Clear current playlist when showing library
+        playlistManager.currentPlaylistId = null;
         this.showView('library-view');
         await this.renderPlaylists();
     }

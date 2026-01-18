@@ -118,18 +118,10 @@ class I18nManager {
     }
 
     getAvailableLanguages() {
-        return [
-            { code: 'en-US', name: 'English' },
-            { code: 'zh-CN', name: '简体中文' },
-            { code: 'zh-TW', name: '繁體中文 (台灣)' },
-            { code: 'zh-HK', name: '繁體中文 (香港)' },
-            { code: 'ja-JP', name: '日本語' },
-            { code: 'es-ES', name: 'Español' },
-            { code: 'fr-FR', name: 'Français' },
-            { code: 'de-DE', name: 'Deutsch' },
-            { code: 'ko-KR', name: '한국어' },
-            { code: 'it-IT', name: 'Italiano' }
-        ];
+        return LANGUAGES.map(lang => ({
+            code: lang.code,
+            name: lang.nativeName
+        }));
     }
 }
 

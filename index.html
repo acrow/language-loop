@@ -51,31 +51,13 @@
                     <div class="form-group">
                         <label for="global-target-lang" data-i18n="welcome.targetLanguage"></label>
                         <select id="global-target-lang">
-                            <option value="en-US">English</option>
-                            <option value="zh-CN">Chinese (Simplified)</option>
-                            <option value="zh-TW">Chinese (Traditional - Taiwan)</option>
-                            <option value="zh-HK">Chinese (Traditional - Hong Kong)</option>
-                            <option value="ja-JP">Japanese</option>
-                            <option value="es-ES">Spanish</option>
-                            <option value="fr-FR">French</option>
-                            <option value="de-DE">German</option>
-                            <option value="ko-KR">Korean</option>
-                            <option value="it-IT">Italian</option>
+                            <!-- Options populated by JavaScript from languages.js -->
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="global-native-lang" data-i18n="welcome.interfaceLanguage"></label>
                         <select id="global-native-lang">
-                            <option value="en-US">English</option>
-                            <option value="zh-CN">简体中文 (Simplified Chinese)</option>
-                            <option value="zh-TW">繁體中文 (Traditional Chinese - Taiwan)</option>
-                            <option value="zh-HK">繁體中文 (Traditional Chinese - Hong Kong)</option>
-                            <option value="ja-JP">日本語 (Japanese)</option>
-                            <option value="es-ES">Español (Spanish)</option>
-                            <option value="fr-FR">Français (French)</option>
-                            <option value="de-DE">Deutsch (German)</option>
-                            <option value="ko-KR">한국어 (Korean)</option>
-                            <option value="it-IT">Italiano (Italian)</option>
+                            <!-- Options populated by JavaScript from languages.js -->
                         </select>
                     </div>
                 </div>
@@ -307,16 +289,7 @@
                         <label for="playlist-target-lang" data-i18n="playlist.targetLanguage">Target Language
                             (Learning)</label>
                         <select id="playlist-target-lang" required>
-                            <option value="en-US">English</option>
-                            <option value="zh-CN">Chinese (Simplified)</option>
-                            <option value="zh-TW">Chinese (Traditional - Taiwan)</option>
-                            <option value="zh-HK">Chinese (Traditional - Hong Kong)</option>
-                            <option value="ja-JP">Japanese</option>
-                            <option value="es-ES">Spanish</option>
-                            <option value="fr-FR">French</option>
-                            <option value="de-DE">German</option>
-                            <option value="ko-KR">Korean</option>
-                            <option value="it-IT">Italian</option>
+                            <!-- Options populated by JavaScript from languages.js -->
                         </select>
                         <small data-i18n="playlist.targetLanguageDesc"></small>
                     </div>
@@ -325,16 +298,7 @@
                         <label for="playlist-native-lang" data-i18n="playlist.nativeLanguage">Native Language
                             (Translation)</label>
                         <select id="playlist-native-lang" required>
-                            <option value="en-US">English</option>
-                            <option value="zh-CN">Chinese (Simplified)</option>
-                            <option value="zh-TW">Chinese (Traditional - Taiwan)</option>
-                            <option value="zh-HK">Chinese (Traditional - Hong Kong)</option>
-                            <option value="ja-JP">Japanese</option>
-                            <option value="es-ES">Spanish</option>
-                            <option value="fr-FR">French</option>
-                            <option value="de-DE">German</option>
-                            <option value="ko-KR">Korean</option>
-                            <option value="it-IT">Italian</option>
+                            <!-- Options populated by JavaScript from languages.js -->
                         </select>
                         <small data-i18n="playlist.nativeLanguageDesc"></small>
                     </div>
@@ -455,16 +419,7 @@
                     <div class="form-group">
                         <label for="edit-target-lang" data-i18n="playlist.targetLanguage">Target Language</label>
                         <select id="edit-target-lang">
-                            <option value="en-US">English (US)</option>
-                            <option value="zh-CN">Chinese (Simplified)</option>
-                            <option value="zh-TW">Chinese (Traditional - Taiwan)</option>
-                            <option value="zh-HK">Chinese (Traditional - Hong Kong)</option>
-                            <option value="ja-JP">Japanese</option>
-                            <option value="es-ES">Spanish</option>
-                            <option value="fr-FR">French</option>
-                            <option value="de-DE">German</option>
-                            <option value="ko-KR">Korean</option>
-                            <option value="it-IT">Italian</option>
+                            <!-- Options populated by JavaScript from languages.js -->
                         </select>
                         <small>⚠️ <span data-i18n="playlist.changeLanguageWarning"></span></small>
                     </div>
@@ -489,8 +444,7 @@
                             <button type="button" class="icon-option" data-icon="🎨">🎨</button>
                             <button type="button" class="icon-option" data-icon="🎵">🎵</button>
                         </div>
-                        <input type="text" id="edit-playlist-icon" maxlength="2" placeholder="Or type emoji"
-                            style="margin-top: 0.5rem;">
+                        <input type="hidden" id="edit-playlist-icon" value="📚">
                     </div>
 
                     <div class="form-group">
@@ -574,31 +528,13 @@
                     <div class="form-group">
                         <label for="import-target-lang" data-i18n="playlist.targetLanguage"></label>
                         <select id="import-target-lang" required>
-                            <option value="en-US">English (US)</option>
-                            <option value="zh-CN">Chinese (Simplified)</option>
-                            <option value="zh-TW">Chinese (Traditional - Taiwan)</option>
-                            <option value="zh-HK">Chinese (Traditional - Hong Kong)</option>
-                            <option value="ja-JP">Japanese</option>
-                            <option value="es-ES">Spanish</option>
-                            <option value="fr-FR">French</option>
-                            <option value="de-DE">German</option>
-                            <option value="ko-KR">Korean</option>
-                            <option value="it-IT">Italian</option>
+                            <!-- Options populated by JavaScript from languages.js -->
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="import-native-lang" data-i18n="playlist.nativeLanguage"></label>
                         <select id="import-native-lang" required>
-                            <option value="en-US">English (US)</option>
-                            <option value="zh-CN" selected>Chinese (Simplified)</option>
-                            <option value="zh-TW">Chinese (Traditional - Taiwan)</option>
-                            <option value="zh-HK">Chinese (Traditional - Hong Kong)</option>
-                            <option value="ja-JP">Japanese</option>
-                            <option value="es-ES">Spanish</option>
-                            <option value="fr-FR">French</option>
-                            <option value="de-DE">German</option>
-                            <option value="ko-KR">Korean</option>
-                            <option value="it-IT">Italian</option>
+                            <!-- Options populated by JavaScript from languages.js -->
                         </select>
                     </div>
                     <div class="form-actions">
@@ -621,6 +557,7 @@
     <div id="toast-container"></div>
 
     <script src="js/dialog.js"></script>
+    <script src="js/languages.js"></script>
     <script src="js/storage.js"></script>
     <script src="js/i18n.js"></script>
     <script src="js/translation.js"></script>

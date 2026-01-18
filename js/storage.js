@@ -215,6 +215,17 @@ class StorageManager {
         });
     }
 
+    async deleteSetting(key) {
+        return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction(['settings'], 'readwrite');
+            const store = transaction.objectStore('settings');
+            const request = store.delete(key);
+
+            request.onsuccess = () => resolve();
+            request.onerror = () => reject(request.error);
+        });
+    }
+
     // Export/Import Operations
     async exportPlaylist(playlistId) {
         const playlist = await this.getPlaylist(playlistId);

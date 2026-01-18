@@ -936,16 +936,20 @@ form {
     justify-content: center;
 }
 
-.icon-option:hover {
+.icon-option:hover,
+.icon-option-create:hover {
     background: rgba(108, 92, 231, 0.2);
     border-color: var(--accent);
     transform: scale(1.1);
 }
 
-.icon-option.selected {
-    background: rgba(108, 92, 231, 0.3);
+.icon-option.selected,
+.icon-option-create.selected {
+    background: rgba(108, 92, 231, 0.5);
     border-color: var(--accent);
-    box-shadow: 0 0 0 2px var(--accent);
+    border-width: 3px;
+    box-shadow: 0 0 0 3px var(--accent), 0 0 20px rgba(108, 92, 231, 0.6);
+    transform: scale(1.05);
 }
 
 .test-final-score {

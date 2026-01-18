@@ -54,7 +54,7 @@ class App {
         if (lastPlaylistId) {
             const playlist = await playlistManager.getPlaylist(lastPlaylistId);
             if (playlist) {
-                // Resume last session
+                // Resume last session - restore playlist
                 ui.showPlayerView(lastPlaylistId);
 
                 // Optionally restore playback position
@@ -74,6 +74,9 @@ class App {
         if (playlistManager.currentPlaylistId) {
             await storage.setSetting('lastPlaylistId', playlistManager.currentPlaylistId);
             await storage.setSetting('lastSentenceIndex', audioEngine.currentIndex);
+        } else {
+            // Clear saved playlist when no playlist is active
+            await storage.deleteSetting('lastPlaylistId');
         }
     }
 
