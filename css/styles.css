@@ -603,6 +603,18 @@ form {
     font-size: 0.875rem;
 }
 
+/* Checkbox label alignment */
+.form-group label input[type="checkbox"] {
+    width: auto;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+.form-group label span {
+    vertical-align: middle;
+}
+
 .form-group input,
 .form-group textarea,
 .form-group select {
@@ -890,12 +902,27 @@ form {
 /* Icon Picker */
 .icon-picker {
     display: grid;
-    grid-template-columns: repeat(8, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
     gap: 0.5rem;
     margin-bottom: 0.5rem;
+    max-width: 100%;
 }
 
-.icon-option {
+/* Responsive icon grid */
+@media (max-width: 768px) {
+    .icon-picker {
+        grid-template-columns: repeat(auto-fit, minmax(45px, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    .icon-picker {
+        grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+    }
+}
+
+.icon-option,
+.icon-option-create {
     width: 100%;
     aspect-ratio: 1;
     font-size: 2rem;

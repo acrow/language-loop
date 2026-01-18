@@ -238,12 +238,21 @@ class UIManager {
             this.savePlaylistMetadata();
         });
 
-        // Icon picker
+        // Icon picker for edit form
         document.querySelectorAll('.icon-option').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.icon-option').forEach(b => b.classList.remove('selected'));
                 btn.classList.add('selected');
                 document.getElementById('edit-playlist-icon').value = btn.dataset.icon;
+            });
+        });
+
+        // Icon picker for create form
+        document.querySelectorAll('.icon-option-create').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.icon-option-create').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                document.getElementById('playlist-icon').value = btn.dataset.icon;
             });
         });
 

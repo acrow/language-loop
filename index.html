@@ -311,9 +311,26 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="playlist-icon" data-i18n="playlist.icon">Icon (Emoji)</label>
-                        <input type="text" id="playlist-icon" maxlength="2" placeholder="📚" value="📚">
-                        <small data-i18n="playlist.iconDesc"></small>
+                        <label data-i18n="playlist.icon">Choose Icon</label>
+                        <div class="icon-picker">
+                            <button type="button" class="icon-option-create" data-icon="📚">📚</button>
+                            <button type="button" class="icon-option-create" data-icon="🇯🇵">🇯🇵</button>
+                            <button type="button" class="icon-option-create" data-icon="🇨🇳">🇨🇳</button>
+                            <button type="button" class="icon-option-create" data-icon="🇺🇸">🇺🇸</button>
+                            <button type="button" class="icon-option-create" data-icon="🇪🇸">🇪🇸</button>
+                            <button type="button" class="icon-option-create" data-icon="🇫🇷">🇫🇷</button>
+                            <button type="button" class="icon-option-create" data-icon="🇩🇪">🇩🇪</button>
+                            <button type="button" class="icon-option-create" data-icon="🎯">🎯</button>
+                            <button type="button" class="icon-option-create" data-icon="✨">✨</button>
+                            <button type="button" class="icon-option-create" data-icon="🌟">🌟</button>
+                            <button type="button" class="icon-option-create" data-icon="💡">💡</button>
+                            <button type="button" class="icon-option-create" data-icon="🎓">🎓</button>
+                            <button type="button" class="icon-option-create" data-icon="📖">📖</button>
+                            <button type="button" class="icon-option-create" data-icon="✏️">✏️</button>
+                            <button type="button" class="icon-option-create" data-icon="🎨">🎨</button>
+                            <button type="button" class="icon-option-create" data-icon="🎵">🎵</button>
+                        </div>
+                        <input type="hidden" id="playlist-icon" value="📚">
                     </div>
 
                     <div class="form-group">
@@ -326,7 +343,7 @@
 
                     <div class="form-actions">
                         <button type="button" id="cancel-playlist-btn" class="btn btn-secondary"
-                            data-i18n-title="common.cancel">Cancel</button>
+                            data-i18n="common.cancel">Cancel</button>
                         <button type="submit" class="btn btn-primary" data-i18n="playlist.createPlaylist">Create
                             Playlist</button>
                     </div>
@@ -359,9 +376,9 @@
                     </div>
                     <div class="form-group">
                         <label>
+                            <input type="checkbox" id="speak-native-checkbox">
                             <span data-i18n="settings.speakNative">Speak native language after target language</span>
                         </label>
-                        <input type="checkbox" id="speak-native-checkbox">
                         <small data-i18n="settings.speakNativeDesc">When enabled, plays translation after the target
                             language sentence</small>
                     </div>
@@ -519,12 +536,12 @@
         <div id="import-text-lang-modal" class="modal hidden">
             <div class="modal-content" style="max-width: 450px;">
                 <div class="modal-header">
-                    <h2>Select Languages for Import</h2>
+                    <h2 data-i18n="playlist.importTextMenu"></h2>
                     <button id="close-import-text-lang-btn" class="btn btn-icon" title="Close">×</button>
                 </div>
                 <form id="import-text-lang-form">
                     <div class="form-group">
-                        <label for="import-target-lang">Target Language</label>
+                        <label for="import-target-lang" data-i18n="playlist.targetLanguage"></label>
                         <select id="import-target-lang" required>
                             <option value="en-US">English (US)</option>
                             <option value="zh-CN">Chinese (Simplified)</option>
@@ -537,7 +554,7 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="import-native-lang">Native Language</label>
+                        <label for="import-native-lang" data-i18n="playlist.nativeLanguage"></label>
                         <select id="import-native-lang" required>
                             <option value="en-US">English (US)</option>
                             <option value="zh-CN" selected>Chinese (Simplified)</option>
@@ -550,8 +567,9 @@
                         </select>
                     </div>
                     <div class="form-actions">
-                        <button type="button" id="cancel-import-text-lang-btn" class="btn btn-secondary">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Import</button>
+                        <button type="button" id="cancel-import-text-lang-btn" class="btn btn-secondary"
+                            data-i18n="common.cancel"></button>
+                        <button type="submit" class="btn btn-primary" data-i18n="common.save"></button>
                     </div>
                 </form>
             </div>
