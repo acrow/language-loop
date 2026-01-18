@@ -116,15 +116,15 @@
                 </div>
 
                 <div class="sleep-timer-controls hidden">
-                    <label for="sleep-timer-player">Sleep Timer:</label>
+                    <label for="sleep-timer-player" data-i18n="playlist.sleepTimer"></label>
                     <select id="sleep-timer-player" class="sleep-timer-select">
-                        <option value="0">Off</option>
-                        <option value="15">15 min</option>
-                        <option value="30">30 min</option>
-                        <option value="45">45 min</option>
-                        <option value="60">60 min</option>
-                        <option value="90">90 min</option>
-                        <option value="120">120 min</option>
+                        <option value="0" data-i18n="playlist.sleepTimerOff"></option>
+                        <option value="15">15 <span data-i18n="playlist.sleepTimerMin"></span></option>
+                        <option value="30">30 <span data-i18n="playlist.sleepTimerMin"></span></option>
+                        <option value="45">45 <span data-i18n="playlist.sleepTimerMin"></span></option>
+                        <option value="60">60 <span data-i18n="playlist.sleepTimerMin"></span></option>
+                        <option value="90">90 <span data-i18n="playlist.sleepTimerMin"></span></option>
+                        <option value="120">120 <span data-i18n="playlist.sleepTimerMin"></span></option>
                     </select>
                     <span id="sleep-timer-countdown" class="timer-countdown hidden"></span>
                 </div>
@@ -152,7 +152,7 @@
         <div id="test-view" class="view hidden">
             <header class="app-header">
                 <button id="back-from-test-btn" class="btn btn-icon" title="Back">←</button>
-                <h1 id="test-mode-title">Writing Test</h1>
+                <h1 id="test-mode-title" data-i18n="test.writingTest">Writing Test</h1>
                 <button id="test-menu-btn" class="btn btn-icon" title="Menu">⋮</button>
             </header>
 
@@ -172,12 +172,14 @@
                     <!-- Writing Test -->
                     <div id="writing-test-input" class="hidden">
                         <textarea id="test-answer-input" rows="3" placeholder="Type your answer here..."></textarea>
-                        <button id="submit-answer-btn" class="btn btn-primary">Submit Answer</button>
+                        <button id="submit-answer-btn" class="btn btn-primary" data-i18n="common.submit">Submit
+                            Answer</button>
                     </div>
 
                     <!-- Speaking Test -->
                     <div id="speaking-test-input" class="hidden">
-                        <button id="speak-answer-btn" class="btn btn-primary btn-large">🎤 Speak Answer</button>
+                        <button id="speak-answer-btn" class="btn btn-primary btn-large">🎤 <span
+                                data-i18n="test.speakAnswer"></span></button>
                         <div id="speaking-status" class="recording-status"></div>
                         <div id="recognized-text" class="recognized-text hidden"></div>
                     </div>
@@ -186,19 +188,20 @@
                 <div id="test-feedback" class="test-feedback hidden">
                     <div id="feedback-message" class="feedback-message"></div>
                     <div id="feedback-comparison" class="feedback-comparison"></div>
-                    <button id="next-test-btn" class="btn btn-primary">Next Sentence</button>
+                    <button id="next-test-btn" class="btn btn-primary" data-i18n="test.nextSentence"></button>
                 </div>
 
                 <div id="test-complete" class="test-complete hidden">
                     <div class="test-complete-icon">🎉</div>
-                    <h2>Test Complete!</h2>
+                    <h2 data-i18n="test.testComplete"></h2>
                     <div class="test-final-score">
                         Final Score: <span id="final-score">0</span>/<span id="final-total">0</span>
                         (<span id="final-percentage">0</span>%)
                     </div>
                     <div class="test-actions">
-                        <button id="retry-test-btn" class="btn btn-primary">Retry Test</button>
-                        <button id="back-to-player-btn" class="btn btn-secondary">Back to Playlist</button>
+                        <button id="retry-test-btn" class="btn btn-primary" data-i18n="test.retryTest"></button>
+                        <button id="back-to-player-btn" class="btn btn-secondary"
+                            data-i18n="test.backToPlayer"></button>
                     </div>
                 </div>
             </div>
@@ -343,41 +346,43 @@
                         <label for="repeat-count-input" data-i18n="settings.repeatCount">Repeat Count per
                             Sentence</label>
                         <input type="number" id="repeat-count-input" min="1" max="10" value="2">
-                        <small>How many times to repeat each sentence</small>
+                        <small data-i18n="settings.repeatCountDesc">How many times to repeat each sentence</small>
                     </div>
 
                     <div class="form-group">
                         <label for="pause-duration-input" data-i18n="settings.pauseDuration">Pause Duration
                             (seconds)</label>
                         <input type="number" id="pause-duration-input" min="0" max="10" step="0.5" value="1">
-                        <small>Pause between repetitions</small>
+                        <small data-i18n="settings.pauseDurationDesc">Pause between repetitions</small>
                     </div>
                     <div class="form-group">
                         <label>
                             <span data-i18n="settings.speakNative">Speak native language after target language</span>
                         </label>
                         <input type="checkbox" id="speak-native-checkbox">
-                        <small>When enabled, plays translation after the target language sentence</small>
+                        <small data-i18n="settings.speakNativeDesc">When enabled, plays translation after the target
+                            language sentence</small>
                     </div>
 
                     <div class="form-group">
                         <label for="speech-rate-input"><span data-i18n="settings.speechRate">Speech Rate</span>: <span
                                 id="speech-rate-value">1.0</span>x</label>
                         <input type="range" id="speech-rate-input" min="0.5" max="2.0" step="0.1" value="1.0">
-                        <small>Adjust the speed of text-to-speech (0.5x = slower, 2.0x = faster)</small>
+                        <small data-i18n="settings.speechRateDesc">Adjust the speed of text-to-speech (0.5x = slower,
+                            2.0x = faster)</small>
                     </div>
 
                     <div class="form-group">
-                        <label for="voice-select">Voice</label>
+                        <label for="voice-select"><span data-i18n="settings.voiceSelect">Voice</span></label>
                         <select id="voice-select">
                             <option value="">Auto (System Default)</option>
                         </select>
-                        <small>Choose a specific voice for text-to-speech</small>
+                        <small data-i18n="settings.voiceSelectDesc">Choose a specific voice for text-to-speech</small>
                     </div>
 
 
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-primary" data-i18n="common.saveSettings">Save
+                        <button type="submit" class="btn btn-primary" data-i18n="common.save">Save
                             Settings</button>
                     </div>
                 </form>
@@ -411,7 +416,7 @@
                             <option value="ko-KR">Korean</option>
                             <option value="it-IT">Italian</option>
                         </select>
-                        <small>⚠️ Changing language will ask if you want to auto-translate all sentences</small>
+                        <small>⚠️ <span data-i18n="playlist.changeLanguageWarning"></span></small>
                     </div>
 
                     <div class="form-group">
@@ -445,8 +450,9 @@
                     </div>
 
                     <div class="form-actions">
-                        <button type="button" id="cancel-edit-playlist-btn" class="btn btn-secondary">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                        <button type="button" id="cancel-edit-playlist-btn" class="btn btn-secondary"
+                            data-i18n="common.cancel"></button>
+                        <button type="submit" class="btn btn-primary" data-i18n="common.save"></button>
                     </div>
                 </form>
             </div>
@@ -455,25 +461,36 @@
         <!-- Library Menu Modal (App-level actions) -->
         <div id="library-menu-modal" class="modal hidden">
             <div class="modal-content modal-menu">
-                <button id="add-playlist-btn" class="menu-item">➕ Create Playlist</button>
-                <button id="import-playlist-btn" class="menu-item">📥 Import Playlist</button>
-                <button id="import-text-btn" class="menu-item">📄 Import from Text</button>
-                <button id="close-library-menu-btn" class="menu-item">✖️ Close</button>
+                <button id="add-playlist-btn" class="menu-item">➕ <span
+                        data-i18n="playlist.createPlaylist"></span></button>
+                <button id="import-playlist-btn" class="menu-item">📥 <span
+                        data-i18n="playlist.importPlaylistMenu"></span></button>
+                <button id="import-text-btn" class="menu-item">📄 <span
+                        data-i18n="playlist.importTextMenu"></span></button>
+                <button id="close-library-menu-btn" class="menu-item">✖️ <span
+                        data-i18n="playlist.closeMenu"></span></button>
             </div>
         </div>
 
         <!-- Playlist Menu Modal (Playlist-specific actions) -->
         <div id="playlist-menu-modal" class="modal hidden">
             <div class="modal-content modal-menu">
-                <button id="writing-test-btn" class="menu-item">✍️ Writing Test</button>
-                <button id="speaking-test-btn" class="menu-item">🎤 Speaking Test</button>
-                <button id="edit-playlist-btn" class="menu-item">✏️ Edit Playlist</button>
-                <button id="duplicate-playlist-btn" class="menu-item">📋 Duplicate Playlist</button>
-                <button id="settings-btn" class="menu-item">⚙️ Settings</button>
-                <button id="export-playlist-btn" class="menu-item">📤 Export Playlist</button>
-                <button id="export-text-btn" class="menu-item">📄 Export as Text</button>
-                <button id="delete-playlist-btn" class="menu-item danger">🗑️ Delete Playlist</button>
-                <button id="close-menu-btn" class="menu-item">✖️ Close</button>
+                <button id="settings-btn" class="menu-item">⚙️ <span data-i18n="playlist.settingsMenu"></span></button>
+                <button id="writing-test-btn" class="menu-item">✍️ <span
+                        data-i18n="playlist.writingTestMenu"></span></button>
+                <button id="speaking-test-btn" class="menu-item">🎤 <span
+                        data-i18n="playlist.speakingTestMenu"></span></button>
+                <button id="edit-playlist-btn" class="menu-item">✏️ <span
+                        data-i18n="playlist.editPlaylistMenu"></span></button>
+                <button id="duplicate-playlist-btn" class="menu-item">📋 <span
+                        data-i18n="playlist.duplicatePlaylistMenu"></span></button>
+                <button id="export-playlist-btn" class="menu-item">📤 <span
+                        data-i18n="playlist.exportPlaylistMenu"></span></button>
+                <button id="export-text-btn" class="menu-item">📄 <span
+                        data-i18n="playlist.exportTextMenu"></span></button>
+                <button id="delete-playlist-btn" class="menu-item danger">🗑️ <span
+                        data-i18n="playlist.deletePlaylistMenu"></span></button>
+                <button id="close-menu-btn" class="menu-item">✖️ <span data-i18n="playlist.closeMenu"></span></button>
             </div>
         </div>
 

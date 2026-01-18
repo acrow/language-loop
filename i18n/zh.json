@@ -11,7 +11,8 @@
     "close": "关闭",
     "next": "下一个",
     "previous": "上一个",
-    "settings": "设置"
+    "settings": "设置",
+    "submit": "提交"
   },
   "welcome": {
     "welcome": "欢迎使用 LoopBuddy",
@@ -41,11 +42,18 @@
     "writingTestMenu": "写作测试",
     "speakingTestMenu": "口语测试",
     "editPlaylistMenu": "编辑播放列表",
-    "settingsMenu": "设置",
+    "settingsMenu": "播放设置",
     "exportPlaylistMenu": "导出播放列表",
     "importPlaylistMenu": "导入播放列表",
     "deletePlaylistMenu": "删除播放列表",
-    "closeMenu": "关闭菜单"
+    "closeMenu": "关闭菜单",
+    "sleepTimer": "睡眠定时器",
+    "sleepTimerOff": "关闭",
+    "sleepTimerMin": "分钟",
+    "duplicatePlaylistMenu": "复制播放列表",
+    "importTextMenu": "从文本导入",
+    "exportTextMenu": "导出为文本",
+    "changeLanguageWarning": "变更语言会提示是否自动翻译所有句子"
   },
   "sentence": {
     "sentences": "句子",
@@ -56,9 +64,29 @@
   "settings": {
     "settings": "设置",
     "repeatCount": "每句重复次数",
+    "repeatCountDesc": "重复每句的次数",
     "pauseDuration": "暂停时长（秒）",
+    "pauseDurationDesc": "重复之间的暂停时间",
     "speechRate": "语速",
-    "voice": "语音",
-    "interfaceLanguage": "界面语言"
+    "speechRateDesc": "调整文本-to-speech的速度（0.5x = 更慢，2.0x = 更快）",
+    "voiceSelect": "语音",
+    "voiceSelectDesc": "为文本-to-speech选择特定的语音",
+    "interfaceLanguage": "界面语言",
+    "speakNative": "在目标语言之后朗读母语",
+    "speakNativeDesc": "当启用时，会在目标语言句子之后播放翻译"
+  },
+  "test": {
+    "writingTest": "作文测试",
+    "speakingTest": "口头测试",
+    "speakAnswer": "录音作答",
+    "testComplete": "测试完成",
+    "nextSentence": "下一句",
+    "retryTest": "重新测试",
+    "tryAgain": "再试一次",
+    "correct": "正确",
+    "notQuite": "不完全",
+    "yourAnswer": "你的答案",
+    "correctAnswer": "正确答案",
+    "backToPlayer": "返回播放列表"
   }
 }

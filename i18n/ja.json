@@ -11,7 +11,8 @@
     "close": "閉じる",
     "next": "次へ",
     "previous": "前へ",
-    "settings": "設定"
+    "settings": "設定",
+    "submit": "提出"
   },
   "welcome": {
     "welcome": "LoopBuddyへようこそ",
@@ -41,11 +42,18 @@
     "writingTestMenu": "作文テスト",
     "speakingTestMenu": "口頭テスト",
     "editPlaylistMenu": "プレイリストを編集",
-    "settingsMenu": "設定",
+    "settingsMenu": "プレイ設定",
     "exportPlaylistMenu": "プレイリストをエクスポート",
     "importPlaylistMenu": "プレイリストをインポート",
     "deletePlaylistMenu": "プレイリストを削除",
-    "closeMenu": "メニューを閉じる"
+    "closeMenu": "メニューを閉じる",
+    "sleepTimer": "スリープタイマー",
+    "sleepTimerOff": "オフ",
+    "sleepTimerMin": "分",
+    "duplicatePlaylistMenu": "プレイリストを複製",
+    "importTextMenu": "テキストからインポート",
+    "exportTextMenu": "テキストとしてエクスポート",
+    "changeLanguageWarning": "言語を変更すると、すべての文章を自動翻訳するかどうかを尋ねられます"
   },
   "sentence": {
     "sentences": "文章",
@@ -56,9 +64,29 @@
   "settings": {
     "settings": "設定",
     "repeatCount": "文章ごとの繰り返し回数",
+    "repeatCountDesc": "各文章を繰り返す回数",
     "pauseDuration": "一時停止時間（秒）",
+    "pauseDurationDesc": "繰り返し間隔",
     "speechRate": "音声速度",
-    "voice": "音声",
-    "interfaceLanguage": "インターフェース言語"
+    "speechRateDesc": "テキスト-to-speechの速度を調整してください（0.5x = より遅く、2.0x = より速く）",
+    "voiceSelect": "音声",
+    "voiceSelectDesc": "テキスト-to-speech用の特定の音声を選択してください",
+    "interfaceLanguage": "インターフェース言語",
+    "speakNative": "目標言語の文章の後に母国語の文章を再生する",
+    "speakNativeDesc": "有効にすると、目標言語の文章の後に母国語の文章を再生します"
+  },
+  "test": {
+    "writingTest": "作文テスト",
+    "speakingTest": "口頭テスト",
+    "testComplete": "テスト完了",
+    "speakAnswer": "答えを録音",
+    "nextSentence": "次の文章",
+    "retryTest": "テストを再試行",
+    "tryAgain": "再試行",
+    "correct": "正解",
+    "notQuite": "ほぼ正解",
+    "yourAnswer": "あなたの答え",
+    "correctAnswer": "正解",
+    "backToPlayer": "プレイリストに戻る"
   }
 }

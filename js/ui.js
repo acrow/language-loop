@@ -1377,7 +1377,7 @@ class UIManager {
             // Stop listening
             testManager.stopSpeechRecognition();
             testManager.isListening = false;
-            btn.textContent = '🎤 Speak Answer';
+            btn.textContent = '🎤 ' + i18n.t('test.speakAnswer');
             status.textContent = '';
             status.classList.remove('recording');
             return;
@@ -1397,7 +1397,7 @@ class UIManager {
         try {
             const transcript = await testManager.startSpeechRecognition();
             testManager.isListening = false;
-            btn.textContent = '🎤 Speak Answer';
+            btn.textContent = '🎤 ' + i18n.t('test.speakAnswer');
             status.textContent = '';
             status.classList.remove('recording');
 
@@ -1408,7 +1408,7 @@ class UIManager {
         } catch (error) {
             console.error('Speech recognition error:', error);
             testManager.isListening = false;
-            btn.textContent = '🎤 Speak Answer';
+            btn.textContent = '🎤 ' + i18n.t('test.speakAnswer');
             status.textContent = '';
             status.classList.remove('recording');
         }
@@ -1427,13 +1427,14 @@ class UIManager {
         const nextBtn = document.getElementById('next-test-btn');
 
         if (result.isCorrect) {
-            messageEl.textContent = '✅ Correct!';
+            messageEl.textContent = '✅ ' + i18n.t('test.correct');
             messageEl.className = 'feedback-message correct';
             comparisonEl.innerHTML = `<div style="color: var(--success); font-size: 1.25rem;">${this.escapeHtml(result.userAnswer)}</div>`;
-            nextBtn.textContent = 'Next Sentence';
+            nextBtn.textContent = i18n.t('test.nextSentence');
+            nextBtn.dataset.action = 'next'; // Mark as next action
             nextBtn.style.display = 'inline-block';
         } else {
-            messageEl.textContent = `❌ Not quite (${result.similarity}% match)`;
+            messageEl.textContent = `❌ ${i18n.t('test.notQuite')} (${result.similarity}% match)`;
             messageEl.className = 'feedback-message incorrect';
 
             // Get character-by-character diff
@@ -1441,15 +1442,16 @@ class UIManager {
 
             comparisonEl.innerHTML = `
                 <div class="diff-container">
-                    <div class="diff-label">Your answer:</div>
+                    <div class="diff-label">${i18n.t('test.yourAnswer')}:</div>
                     <div class="diff-text">${diff.userHTML}</div>
                 </div>
                 <div class="diff-container">
-                    <div class="diff-label">Correct answer:</div>
+                    <div class="diff-label">${i18n.t('test.correctAnswer')}:</div>
                     <div class="diff-text">${diff.correctHTML}</div>
                 </div>
             `;
-            nextBtn.textContent = 'Try Again';
+            nextBtn.textContent = i18n.t('test.tryAgain');
+            nextBtn.dataset.action = 'retry'; // Mark as retry action
             nextBtn.style.display = 'inline-block';
         }
     }
@@ -1462,8 +1464,8 @@ class UIManager {
         recognizedTextEl.textContent = '';
         recognizedTextEl.classList.add('hidden');
 
-        // Only advance if the button says "Next Sentence" (meaning answer was correct)
-        if (nextBtn.textContent === 'Try Again') {
+        // Only advance if the button action is "next" (meaning answer was correct)
+        if (nextBtn.dataset.action === 'retry') {
             // Hide feedback, show input again for retry
             document.getElementById('test-feedback').classList.add('hidden');
             document.getElementById('test-input-area').classList.remove('hidden');

@@ -11,7 +11,8 @@
     "close": "Close",
     "next": "Next",
     "previous": "Previous",
-    "settings": "Settings"
+    "settings": "Settings",
+    "submit": "Submit"
   },
   "welcome": {
     "welcome": "Welcome to LoopBuddy",
@@ -41,11 +42,18 @@
     "writingTestMenu": "Writing Test",
     "speakingTestMenu": "Speaking Test",
     "editPlaylistMenu": "Edit Playlist",
-    "settingsMenu ": "Settings",
+    "settingsMenu ": "Play Settings",
     "exportPlaylistMenu": "Export Playlist",
     "importPlaylistMenu": "Import Playlist",
     "deletePlaylistMenu": "Delete Playlist",
-    "closeMenu": "Close Menu"
+    "closeMenu": "Close Menu",
+    "sleepTimer": "Sleep Timer",
+    "sleepTimerOff": "Off",
+    "sleepTimerMin": "min",
+    "duplicatePlaylistMenu": "Duplicate Playlist",
+    "importTextMenu": "Import from Text",
+    "exportTextMenu": "Export as Text",
+    "changeLanguageWarning": "Changing language will ask if you want to auto-translate all sentences"
   },
   "sentence": {
     "sentences": "Sentences",
@@ -56,9 +64,29 @@
   "settings": {
     "settings": "Settings",
     "repeatCount": "Repeat Count per Sentence",
+    "repeatCountDesc": "How many times to repeat each sentence",
     "pauseDuration": "Pause Duration (seconds)",
+    "pauseDurationDesc": "Pause between repetitions",
     "speechRate": "Speech Rate",
-    "voice": "Voice",
-    "interfaceLanguage": "Interface Language"
+    "speechRateDesc": "Adjust the speed of text-to-speech (0.5x = slower, 2.0x = faster)",
+    "voiceSelect": "Voice",
+    "voiceSelectDesc": "Choose a specific voice for text-to-speech",
+    "interfaceLanguage": "Interface Language",
+    "speakNative": "Speak Native Language After Target Language",
+    "speakNativeDesc": "When enabled, plays translation after the target language sentence"
+  },
+  "test": {
+    "writingTest": "Writing Test",
+    "speakingTest": "Speaking Test",
+    "speakAnswer": "Speak Answer",
+    "testComplete": "Test Complete",
+    "nextSentence": "Next Sentence",
+    "retryTest": "Retry Test",
+    "tryAgain": "Try Again",
+    "correct": "Correct",
+    "notQuite": "Not Quite",
+    "yourAnswer": "Your Answer",
+    "correctAnswer": "Correct Answer",
+    "backToPlayer": "Back to Playlist"
   }
 }
