@@ -902,7 +902,7 @@ class UIManager {
         this.editingSentenceId = sentence ? sentence.id : null;
         this.recordedAudio = sentence?.customAudio || null;
 
-        document.getElementById('editor-title').textContent = sentence ? 'Edit Sentence' : 'Add Sentence';
+        document.getElementById('editor-title').textContent = sentence ? i18n.t('sentence.editSentence') : i18n.t('sentence.addSentence');
         document.getElementById('target-text-input').value = sentence?.targetText || '';
         document.getElementById('native-text-input').value = sentence?.nativeText || '';
 

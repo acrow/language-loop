@@ -64,6 +64,7 @@
   "sentence": {
     "sentences": "句子",
     "addSentence": "添加句子",
+    "editSentence": "编辑句子",
     "targetText": "目标语言句子",
     "voiceInput": "语音输入",
     "autoTranslate": "自动翻译",

@@ -64,6 +64,7 @@
   "sentence": {
     "sentences": "文章",
     "addSentence": "文章を追加",
+    "editSentence": "文章を編集",
     "targetText": "目標言語の文章",
     "nativeText": "翻訳",
     "voiceInput": "音声入力",

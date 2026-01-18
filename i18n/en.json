@@ -64,6 +64,7 @@
   "sentence": {
     "sentences": "Sentences",
     "addSentence": "Add Sentence",
+    "editSentence": "Edit Sentence",
     "targetText": "Target Language Sentence",
     "nativeText": "Translation",
     "voiceInput": "Voice Input",
