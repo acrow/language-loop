@@ -9,6 +9,7 @@ class AudioEngine {
         this.currentRepeat = 0;
         this.isPlaying = false;
         this.isPaused = false;
+        this.isPlayingAudio = false; // Lock to prevent concurrent playback
         this.loopMode = true;
         this.resultStartIndex = 0;
         this.speechRate = 1.0; // Default speech rate
@@ -104,6 +105,7 @@ class AudioEngine {
     stop() {
         this.isPlaying = false;
         this.isPaused = false;
+        this.isPlayingAudio = false; // Reset playback lock
         this.currentRepeat = 0;
         this.synth.cancel();
         this.audioElement.pause();
@@ -156,6 +158,14 @@ class AudioEngine {
     async playCurrentSentence() {
         if (!this.isPlaying || this.currentPlaylist.length === 0) return;
 
+        // Prevent concurrent playback
+        if (this.isPlayingAudio) {
+            console.log('Already playing audio, skipping...');
+            return;
+        }
+
+        this.isPlayingAudio = true;
+
         const sentence = this.currentPlaylist[this.currentIndex];
         this.emit('sentenceChange', {
             index: this.currentIndex,
@@ -185,6 +195,7 @@ class AudioEngine {
 
             if (this.currentRepeat < this.repeatCount) {
                 // Repeat same sentence after pause
+                this.isPlayingAudio = false; // Release lock before sleep
                 await this.sleep(this.pauseDuration);
                 if (this.isPlaying) {
                     await this.playCurrentSentence();
@@ -198,17 +209,20 @@ class AudioEngine {
                     if (this.loopMode) {
                         // Loop back to start
                         this.currentIndex = 0;
+                        this.isPlayingAudio = false; // Release lock before sleep
                         await this.sleep(this.pauseDuration);
                         if (this.isPlaying) {
                             await this.playCurrentSentence();
                         }
                     } else {
                         // Playback complete
+                        this.isPlayingAudio = false;
                         this.stop();
                         this.emit('playbackComplete');
                     }
                 } else {
                     // Play next sentence after pause
+                    this.isPlayingAudio = false; // Release lock before sleep
                     await this.sleep(this.pauseDuration);
                     if (this.isPlaying) {
                         await this.playCurrentSentence();
@@ -217,6 +231,7 @@ class AudioEngine {
             }
         } catch (error) {
             console.error('Playback error:', error);
+            this.isPlayingAudio = false;
             this.stop();
         }
     }
