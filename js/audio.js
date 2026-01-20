@@ -9,12 +9,12 @@ class AudioEngine {
         this.currentRepeat = 0;
         this.isPlaying = false;
         this.isPaused = false;
-        this.isPlayingAudio = false; // Lock to prevent concurrent playback
         this.loopMode = true;
         this.resultStartIndex = 0;
         this.speechRate = 1.0; // Default speech rate
         this.preferredVoiceName = null; // Preferred voice name
         this.speakNativeLanguage = false; // Speak native language after target
+        this.isJump = false;
 
         // Speech synthesis
         this.synth = window.speechSynthesis;
@@ -105,66 +105,48 @@ class AudioEngine {
     stop() {
         this.isPlaying = false;
         this.isPaused = false;
-        this.isPlayingAudio = false; // Reset playback lock
         this.currentRepeat = 0;
         this.synth.cancel();
         this.audioElement.pause();
         this.emit('playbackStateChange', { isPlaying: false, isPaused: false });
     }
 
-    next() {
-        this.currentRepeat = 0;
-        this.currentIndex = (this.currentIndex + 1) % this.currentPlaylist.length;
-        this.emit('sentenceChange', {
-            index: this.currentIndex,
-            sentence: this.currentPlaylist[this.currentIndex]
-        });
-
-        if (this.isPlaying) {
-            this.playCurrentSentence();
-        }
+    next(isJump = true) {
+        this.jumpToSentence((this.currentIndex + 1) % this.currentPlaylist.length, isJump);
     }
 
-    previous() {
-        this.currentRepeat = 0;
-        this.currentIndex = this.currentIndex === 0
-            ? this.currentPlaylist.length - 1
-            : this.currentIndex - 1;
-        this.emit('sentenceChange', {
-            index: this.currentIndex,
-            sentence: this.currentPlaylist[this.currentIndex]
-        });
-
-        if (this.isPlaying) {
-            this.playCurrentSentence();
-        }
+    previous(isJump = true) {
+        this.jumpToSentence((this.currentIndex - 1 + this.currentPlaylist.length) % this.currentPlaylist.length, isJump);
     }
 
-    jumpToSentence(index) {
-        if (index >= 0 && index < this.currentPlaylist.length) {
-            this.currentIndex = index;
-            this.currentRepeat = 0;
-            this.emit('sentenceChange', {
-                index: this.currentIndex,
-                sentence: this.currentPlaylist[this.currentIndex]
-            });
-
-            if (this.isPlaying) {
-                this.playCurrentSentence();
+    async jumpToSentence(index, isJump = true) {
+        if (this.currentIndex === index) {
+            if (this.isPaused) {
+                this.play();
+            } else {
+                this.pause();
             }
+            return;
         }
+
+        // Stop current audio playback to prevent overlapping
+        this.synth.cancel();
+        this.audioElement.pause();
+
+        this.isJump = isJump;
+        this.currentRepeat = 0;
+        this.currentIndex = index;
+
+        this.emit('sentenceChange', {
+            index: this.currentIndex,
+            sentence: this.currentPlaylist[this.currentIndex]
+        });
+
+        await this.playCurrentSentence();
     }
 
     async playCurrentSentence() {
         if (!this.isPlaying || this.currentPlaylist.length === 0) return;
-
-        // Prevent concurrent playback
-        if (this.isPlayingAudio) {
-            console.log('Already playing audio, skipping...');
-            return;
-        }
-
-        this.isPlayingAudio = true;
 
         const sentence = this.currentPlaylist[this.currentIndex];
         this.emit('sentenceChange', {
@@ -182,56 +164,33 @@ class AudioEngine {
                 await this.playTTS(sentence.targetText, sentence.targetLang, this.preferredVoiceName);
             }
 
-            // Play native language if enabled
-            if (this.speakNativeLanguage && sentence.nativeText && sentence.nativeLang) {
-                // Small pause between languages
-                await this.sleep(300);
-                // Auto-select appropriate voice for native language (pass null to ignore preferred voice)
-                await this.playTTS(sentence.nativeText, sentence.nativeLang, null);
+            // If this was a jump (user clicked next/prev/sentence), don't continue with repetition
+            if (this.isJump) {
+                this.isJump = false;
+                return;
             }
 
             // Handle repetition
             this.currentRepeat++;
+            await this.sleep(this.pauseDuration);
 
             if (this.currentRepeat < this.repeatCount) {
-                // Repeat same sentence after pause
-                this.isPlayingAudio = false; // Release lock before sleep
-                await this.sleep(this.pauseDuration);
-                if (this.isPlaying) {
-                    await this.playCurrentSentence();
-                }
+                await this.playCurrentSentence();
             } else {
-                // Move to next sentence
-                this.currentRepeat = 0;
-                this.currentIndex++;
-
-                if (this.currentIndex >= this.currentPlaylist.length) {
-                    if (this.loopMode) {
-                        // Loop back to start
-                        this.currentIndex = 0;
-                        this.isPlayingAudio = false; // Release lock before sleep
-                        await this.sleep(this.pauseDuration);
-                        if (this.isPlaying) {
-                            await this.playCurrentSentence();
-                        }
-                    } else {
-                        // Playback complete
-                        this.isPlayingAudio = false;
-                        this.stop();
-                        this.emit('playbackComplete');
-                    }
-                } else {
-                    // Play next sentence after pause
-                    this.isPlayingAudio = false; // Release lock before sleep
+                // Play native language once after all repetitions (if enabled)
+                if (this.speakNativeLanguage && sentence.nativeText && sentence.nativeLang) {
+                    // Small pause before native language
+                    await this.sleep(300);
+                    // Auto-select appropriate voice for native language
+                    await this.playTTS(sentence.nativeText, sentence.nativeLang, null);
                     await this.sleep(this.pauseDuration);
-                    if (this.isPlaying) {
-                        await this.playCurrentSentence();
-                    }
                 }
+
+                this.currentRepeat = 0;
+                this.next(false);
             }
         } catch (error) {
             console.error('Playback error:', error);
-            this.isPlayingAudio = false;
             this.stop();
         }
     }

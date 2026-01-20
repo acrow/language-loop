@@ -523,9 +523,6 @@ class UIManager {
         item.querySelector('.sentence-content').addEventListener('click', (e) => {
             if (!e.target.classList.contains('btn')) {
                 audioEngine.jumpToSentence(index);
-                if (!audioEngine.isPlaying) {
-                    audioEngine.play();
-                }
             }
         });
 
