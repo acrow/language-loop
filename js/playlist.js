@@ -141,8 +141,14 @@ class PlaylistManager {
         const playlist = await storage.getPlaylist(playlistId);
         const sentences = await storage.getSentencesByPlaylist(playlistId);
 
-        // Update playlist language
-        await storage.updatePlaylist(playlistId, { targetLang: newTargetLang });
+        // Update playlist language and reset preferred voice to avoid compatibility issues
+        await storage.updatePlaylist(playlistId, {
+            targetLang: newTargetLang,
+            settings: {
+                ...playlist.settings,
+                preferredVoice: null  // Reset to default voice for new language
+            }
+        });
 
         if (autoTranslate && sentences.length > 0) {
             // Translate all sentences to new language
