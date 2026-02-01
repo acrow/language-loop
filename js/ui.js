@@ -74,7 +74,7 @@ class UIManager {
             this.showSentenceEditor();
         });
 
-        document.getElementById('playlist-menu-btn')?.addEventListener('click', () => {
+        document.getElementById('player-menu-btn')?.addEventListener('click', () => {
             this.showPlaylistMenu();
         });
 
@@ -296,6 +296,15 @@ class UIManager {
             this.nextTestQuestion();
         });
 
+        // Test navigation buttons
+        document.getElementById('prev-test-sentence-btn')?.addEventListener('click', () => {
+            this.previousTestSentence();
+        });
+
+        document.getElementById('next-test-sentence-btn')?.addEventListener('click', () => {
+            this.nextTestSentence();
+        });
+
         document.getElementById('retry-test-btn')?.addEventListener('click', () => {
             this.retryTest();
         });
@@ -325,6 +334,27 @@ class UIManager {
                     nextBtn.click();
                 }
             }
+        });
+
+        // Theme selector buttons
+        const themeButtons = ['theme-btn-welcome', 'theme-btn-library', 'theme-btn-player', 'theme-btn-test'];
+        themeButtons.forEach(btnId => {
+            document.getElementById(btnId)?.addEventListener('click', () => {
+                this.showThemeSelector();
+            });
+        });
+
+        // Theme selector modal
+        document.getElementById('close-theme-selector-btn')?.addEventListener('click', () => {
+            this.hideModal('theme-selector-modal');
+        });
+
+        // Theme option clicks
+        document.querySelectorAll('.theme-option').forEach(option => {
+            option.addEventListener('click', () => {
+                const theme = option.getAttribute('data-theme');
+                this.applyTheme(theme);
+            });
         });
     }
 
@@ -368,7 +398,7 @@ class UIManager {
         const playlist = await playlistManager.getPlaylist(playlistId);
         const sentences = await playlistManager.loadPlaylist(playlistId);
 
-        document.getElementById('current-playlist-name').textContent = playlist.name;
+        document.getElementById('playlist-title').textContent = playlist.name;
 
         audioEngine.loadPlaylist(sentences);
         await this.renderSentences(sentences);
@@ -755,7 +785,7 @@ class UIManager {
         if (newName && newName.trim()) {
             try {
                 await playlistManager.renamePlaylist(playlistManager.currentPlaylistId, newName);
-                document.getElementById('current-playlist-name').textContent = newName;
+                document.getElementById('playlist-title').textContent = newName;
             } catch (error) {
                 await dialog.alert('Error renaming playlist: ' + error.message, 'Error');
             }
@@ -1549,6 +1579,49 @@ class UIManager {
         this.startTest(testManager.testMode);
     }
 
+    // Navigate to previous sentence in test
+    previousTestSentence() {
+        testManager.previousSentence();
+        this.resetTestQuestion();
+    }
+
+    // Navigate to next sentence in test
+    nextTestSentence() {
+        testManager.nextSentence();
+        if (testManager.isComplete()) {
+            // Don't go past the end, go back to last sentence
+            testManager.previousSentence();
+        } else {
+            this.resetTestQuestion();
+        }
+    }
+
+    // Reset the current question (clear input, hide feedback)
+    resetTestQuestion() {
+        // Clear input
+        const answerInput = document.getElementById('test-answer-input');
+        if (answerInput) answerInput.value = '';
+
+        // Clear recognized text
+        const recognizedTextEl = document.getElementById('recognized-text');
+        if (recognizedTextEl) {
+            recognizedTextEl.textContent = '';
+            recognizedTextEl.classList.add('hidden');
+        }
+
+        // Hide feedback, show input
+        document.getElementById('test-feedback').classList.add('hidden');
+        document.getElementById('test-input-area').classList.remove('hidden');
+
+        // Update the display
+        this.displayTestQuestion();
+
+        // Auto-focus for writing test
+        if (testManager.testMode === 'writing') {
+            answerInput?.focus();
+        }
+    }
+
     // Toast Notifications
     showToast(message, type = 'success') {
         const container = document.getElementById('toast-container');
@@ -1570,6 +1643,48 @@ class UIManager {
             toast.classList.add('hiding');
             setTimeout(() => toast.remove(), 300);
         }, 3000);
+    }
+
+    // Theme Management
+    showThemeSelector() {
+        this.showModal('theme-selector-modal');
+        this.updateThemeSelector();
+    }
+
+    updateThemeSelector() {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        document.querySelectorAll('.theme-option').forEach(option => {
+            if (option.getAttribute('data-theme') === currentTheme) {
+                option.classList.add('active');
+            } else {
+                option.classList.remove('active');
+            }
+        });
+    }
+
+    async applyTheme(theme) {
+        // Apply theme to DOM
+        document.documentElement.setAttribute('data-theme', theme);
+
+        // Save to storage
+        await storage.setSetting('theme', theme);
+
+        // Update theme selector UI
+        this.updateThemeSelector();
+
+        // Close modal
+        this.hideModal('theme-selector-modal');
+
+        // Show toast
+        const themeNames = {
+            'dark': '🟣 Dark Purple',
+            'light': '☀️ Light',
+            'ocean': '🌊 Ocean',
+            'forest': '🌲 Forest',
+            'sunset': '🌅 Sunset',
+            'midnight': '🌑 Midnight'
+        };
+        this.showToast(`Theme changed to ${themeNames[theme] || theme}`);
     }
 }
 

@@ -1,5 +1,5 @@
 :root {
-    /* Color Palette */
+    /* Color Palette - Dark Purple (default) */
     --bg-primary: #0f0f1e;
     --bg-secondary: #1a1a2e;
     --bg-tertiary: #252541;
@@ -37,6 +37,107 @@
     --transition-normal: 0.3s ease;
     --transition-slow: 0.5s ease;
 }
+
+/* Light Theme */
+[data-theme="light"] {
+    --bg-primary: #f5f5f7;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #e8e8ed;
+    --accent-primary: #5e4db2;
+    --accent-secondary: #8b7fc7;
+    --accent-gradient: linear-gradient(135deg, #5e4db2 0%, #7b68c4 100%);
+    --text-primary: #1d1d1f;
+    --text-secondary: #424245;
+    --text-muted: #86868b;
+    --success: #00a884;
+    --danger: #e63946;
+    --warning: #f59e0b;
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+    --shadow-glow: 0 0 20px rgba(94, 77, 178, 0.2);
+}
+
+/* Ocean Theme */
+[data-theme="ocean"] {
+    --bg-primary: #0a1929;
+    --bg-secondary: #132f4c;
+    --bg-tertiary: #1e4976;
+    --accent-primary: #00b4d8;
+    --accent-secondary: #48cae4;
+    --accent-gradient: linear-gradient(135deg, #0077b6 0%, #00b4d8 100%);
+    --text-primary: #e8f4f8;
+    --text-secondary: #b0d4e3;
+    --text-muted: #6b9ab8;
+    --success: #06ffa5;
+    --danger: #ff006e;
+    --warning: #ffbe0b;
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
+    --shadow-glow: 0 0 20px rgba(0, 180, 216, 0.3);
+}
+
+/* Forest Theme */
+[data-theme="forest"] {
+    --bg-primary: #0d1b0d;
+    --bg-secondary: #1a2f1a;
+    --bg-tertiary: #2d4a2d;
+    --accent-primary: #52b788;
+    --accent-secondary: #74c69d;
+    --accent-gradient: linear-gradient(135deg, #40916c 0%, #52b788 100%);
+    --text-primary: #f1faee;
+    --text-secondary: #d8f3dc;
+    --text-muted: #95d5b2;
+    --success: #a7c957;
+    --danger: #e63946;
+    --warning: #f4a261;
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
+    --shadow-glow: 0 0 20px rgba(82, 183, 136, 0.3);
+}
+
+/* Sunset Theme */
+[data-theme="sunset"] {
+    --bg-primary: #1a0f14;
+    --bg-secondary: #2d1b24;
+    --bg-tertiary: #4a2c3a;
+    --accent-primary: #ff6b9d;
+    --accent-secondary: #ffa6c1;
+    --accent-gradient: linear-gradient(135deg, #ff6b9d 0%, #ff8fab 100%);
+    --text-primary: #fff5f7;
+    --text-secondary: #ffd6e0;
+    --text-muted: #ffb3c6;
+    --success: #06ffa5;
+    --danger: #ff4d6d;
+    --warning: #ffbe0b;
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
+    --shadow-glow: 0 0 20px rgba(255, 107, 157, 0.3);
+}
+
+/* Midnight Theme */
+[data-theme="midnight"] {
+    --bg-primary: #000000;
+    --bg-secondary: #0d0d0d;
+    --bg-tertiary: #1a1a1a;
+    --accent-primary: #ffffff;
+    --accent-secondary: #e0e0e0;
+    --accent-gradient: linear-gradient(135deg, #ffffff 0%, #cccccc 100%);
+    --text-primary: #ffffff;
+    --text-secondary: #b3b3b3;
+    --text-muted: #666666;
+    --success: #00ff88;
+    --danger: #ff4444;
+    --warning: #ffaa00;
+    --shadow-sm: 0 2px 8px rgba(255, 255, 255, 0.05);
+    --shadow-md: 0 4px 16px rgba(255, 255, 255, 0.08);
+    --shadow-lg: 0 8px 32px rgba(255, 255, 255, 0.12);
+    --shadow-glow: 0 0 20px rgba(255, 255, 255, 0.15);
+}
+
 
 /* Utility Classes */
 .hidden {
@@ -167,6 +268,10 @@ body {
 .btn-large {
     padding: 1rem 2rem;
     font-size: 1.125rem;
+}
+
+.btn-full-width {
+    width: 100%;
 }
 
 .btn-control {
@@ -1087,4 +1192,34 @@ form {
 
 .char-missing {
     color: #10b981;
+}
+
+/* Theme Selector */
+.theme-option {
+    cursor: pointer;
+    transition: transform var(--transition-fast);
+}
+
+.theme-option:hover {
+    transform: scale(1.05);
+}
+
+.theme-option.active .theme-preview {
+    box-shadow: 0 0 0 3px var(--accent-primary) !important;
+}
+
+.theme-preview {
+    height: 120px;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+    transition: all var(--transition-normal);
+    box-shadow: var(--shadow-md);
+}
+
+.theme-name {
+    text-align: center;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.9rem;
 }

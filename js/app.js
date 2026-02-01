@@ -14,6 +14,9 @@ class App {
             // Migrate existing playlists to have settings
             await storage.migratePlaylistSettings();
 
+            // Initialize theme
+            await this.initTheme();
+
             // Initialize i18n
             await i18n.init();
 
@@ -29,8 +32,9 @@ class App {
             // Check for existing data and restore session
             await this.restoreSession();
 
-            // Register service worker
-            this.registerServiceWorker();
+            // Register service worker (disabled during development to prevent caching issues)
+            // Uncomment this before deploying to production
+            // this.registerServiceWorker();
 
             this.initialized = true;
         } catch (error) {
@@ -83,13 +87,34 @@ class App {
     registerServiceWorker() {
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js')
-                .then(registration => {
-                    console.log('Service Worker registered:', registration);
-                })
-                .catch(error => {
-                    console.log('Service Worker registration failed:', error);
-                });
+                .then(registration => console.log('Service Worker registered'))
+                .catch(error => console.log('Service Worker registration failed:', error));
         }
+    }
+
+    async initTheme() {
+        try {
+            // Load saved theme or use system preference
+            const savedTheme = await storage.getSetting('theme');
+            const theme = savedTheme || this.getSystemTheme();
+            this.applyTheme(theme);
+        } catch (error) {
+            console.warn('Theme initialization failed, using default:', error);
+            // Fallback to default theme if there's an error
+            this.applyTheme('dark');
+        }
+    }
+
+    getSystemTheme() {
+        // Check system dark mode preference
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+            return 'light';
+        }
+        return 'dark'; // Default
+    }
+
+    applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
     }
 }
 

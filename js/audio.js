@@ -29,6 +29,10 @@ class AudioEngine {
         this.sleepTimerTimeout = null;
         this.sleepTimerEndTime = null;
 
+        // Wake Lock API - prevents screen from locking during playback
+        this.wakeLock = null;
+        this.supportsWakeLock = 'wakeLock' in navigator;
+
         // Load voices
         this.loadVoices();
         if (speechSynthesis.onvoiceschanged !== undefined) {
@@ -41,6 +45,9 @@ class AudioEngine {
             playbackStateChange: [],
             playbackComplete: []
         };
+
+        // Setup wake lock visibility handler
+        this.setupWakeLockHandlers();
     }
 
     loadVoices() {
@@ -85,44 +92,59 @@ class AudioEngine {
     }
 
     async play() {
+        console.log("play");
         if (this.currentPlaylist.length === 0) return;
 
         this.isPlaying = true;
         this.isPaused = false;
         this.emit('playbackStateChange', { isPlaying: true, isPaused: false });
 
+        // Request wake lock to prevent screen from sleeping
+        await this.requestWakeLock();
+
         await this.playCurrentSentence();
     }
 
     pause() {
+        console.log("pause");
         this.isPaused = true;
         this.isPlaying = false;
         this.synth.cancel();
         this.audioElement.pause();
         this.emit('playbackStateChange', { isPlaying: false, isPaused: true });
+
+        // Release wake lock when paused
+        this.releaseWakeLock();
     }
 
     stop() {
+        console.log("stop");
         this.isPlaying = false;
         this.isPaused = false;
         this.currentRepeat = 0;
         this.synth.cancel();
         this.audioElement.pause();
         this.emit('playbackStateChange', { isPlaying: false, isPaused: false });
+
+        // Release wake lock when stopped
+        this.releaseWakeLock();
     }
 
     next(isJump = true) {
+        console.log("next", isJump);
         this.jumpToSentence((this.currentIndex + 1) % this.currentPlaylist.length, isJump);
     }
 
     previous(isJump = true) {
+        console.log("previous", isJump);
         this.jumpToSentence((this.currentIndex - 1 + this.currentPlaylist.length) % this.currentPlaylist.length, isJump);
     }
 
     async jumpToSentence(index, isJump = true) {
+        console.log("jumpToSentence", index);
         if (this.currentIndex === index) {
             if (this.isPaused) {
-                this.play();
+                await this.play();
             } else {
                 this.pause();
             }
@@ -157,6 +179,7 @@ class AudioEngine {
 
         try {
             // Play audio (custom or TTS)
+            console.log("playCurrentSentence", this.currentIndex, this.currentRepeat);
             if (sentence.customAudio) {
                 await this.playCustomAudio(sentence.customAudio);
             } else {
@@ -175,8 +198,10 @@ class AudioEngine {
             await this.sleep(this.pauseDuration);
 
             if (this.currentRepeat < this.repeatCount) {
+                console.log("playCurrentSentence repeat", this.currentIndex, this.currentRepeat);
                 await this.playCurrentSentence();
             } else {
+                console.log("playCurrentSentence end", this.currentIndex, this.currentRepeat);
                 // Play native language once after all repetitions (if enabled)
                 if (this.speakNativeLanguage && sentence.nativeText && sentence.nativeLang) {
                     // Small pause before native language
@@ -531,6 +556,48 @@ class AudioEngine {
         if (!this.sleepTimerEndTime) return 0;
         const remaining = Math.max(0, this.sleepTimerEndTime - Date.now());
         return Math.ceil(remaining / 60000); // Return minutes
+    }
+
+    // Wake Lock Management
+    setupWakeLockHandlers() {
+        // Re-request wake lock when page becomes visible again
+        document.addEventListener('visibilitychange', async () => {
+            if (this.wakeLock !== null && document.visibilityState === 'visible') {
+                await this.requestWakeLock();
+            }
+        });
+    }
+
+    async requestWakeLock() {
+        // Only request if browser supports it and we're playing
+        if (!this.supportsWakeLock || !this.isPlaying) {
+            return;
+        }
+
+        try {
+            this.wakeLock = await navigator.wakeLock.request('screen');
+            console.log('Wake Lock activated - screen will stay on');
+
+            // Listen for wake lock release
+            this.wakeLock.addEventListener('release', () => {
+                console.log('Wake Lock released');
+            });
+        } catch (err) {
+            // Wake lock request can fail (e.g., battery is too low)
+            console.warn('Wake Lock request failed:', err);
+        }
+    }
+
+    async releaseWakeLock() {
+        if (this.wakeLock !== null) {
+            try {
+                await this.wakeLock.release();
+                this.wakeLock = null;
+                console.log('Wake Lock released manually');
+            } catch (err) {
+                console.warn('Wake Lock release failed:', err);
+            }
+        }
     }
 }
 

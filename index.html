@@ -22,6 +22,9 @@
     <div id="app">
         <!-- Welcome Screen -->
         <div id="welcome-view" class="view hidden">
+            <div style="position: absolute; top: 1rem; right: 1rem; z-index: 100;">
+                <button id="theme-btn-welcome" class="btn btn-icon" title="Change Theme">🎨</button>
+            </div>
             <div class="welcome-container">
                 <div class="welcome-icon">🎵</div>
                 <h1 id="welcome-title" class="welcome-title" data-i18n="welcome.welcome"></h1>
@@ -62,7 +65,8 @@
                     </div>
                 </div>
 
-                <button id="get-started-btn" class="btn btn-primary btn-large" data-i18n="welcome.start"></button>
+                <button id="get-started-btn" class="btn btn-primary btn-large btn-full-width"
+                    data-i18n="welcome.start"></button>
             </div>
         </div>
 
@@ -71,7 +75,10 @@
             <header class="app-header">
                 <button id="language-settings-btn" class="btn btn-icon" title="Language Settings">🌐</button>
                 <h1>📚 <span data-i18n="playlist.playlists">My Playlists</span></h1>
-                <button id="library-menu-btn" class="btn btn-icon" title="Library Menu">⋮</button>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button id="theme-btn-library" class="btn btn-icon" title="Change Theme">🎨</button>
+                    <button id="library-menu-btn" class="btn btn-icon" title="Library Menu">⋮</button>
+                </div>
             </header>
 
             <div id="playlists-container" class="playlists-grid">
@@ -91,9 +98,12 @@
         <!-- Player View -->
         <div id="player-view" class="view hidden">
             <header class="app-header">
-                <button id="back-to-library-btn" class="btn btn-icon">←</button>
-                <h1 id="current-playlist-name">Playlist</h1>
-                <button id="playlist-menu-btn" class="btn btn-icon">⋮</button>
+                <button id="back-to-library-btn" class="btn btn-icon" title="Back to Library">←</button>
+                <h1 id="playlist-title">Playlist</h1>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button id="theme-btn-player" class="btn btn-icon" title="Change Theme">🎨</button>
+                    <button id="player-menu-btn" class="btn btn-icon" title="Player Menu">⋮</button>
+                </div>
             </header>
 
             <div class="player-container">
@@ -150,14 +160,27 @@
             <header class="app-header">
                 <button id="back-from-test-btn" class="btn btn-icon" title="Back">←</button>
                 <h1 id="test-mode-title" data-i18n="test.writingTest">Writing Test</h1>
-                <button id="test-menu-btn" class="btn btn-icon" title="Menu">⋮</button>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button id="theme-btn-test" class="btn btn-icon" title="Change Theme">🎨</button>
+                    <button id="test-menu-btn" class="btn btn-icon" title="Menu">⋮</button>
+                </div>
             </header>
 
             <div class="test-container">
-                <div class="test-progress">
-                    <span id="test-current">1</span> / <span id="test-total">0</span>
-                    <span id="test-score" style="margin-left: 1rem;">Score: <span id="test-correct">0</span>/<span
-                            id="test-attempted">0</span></span>
+
+
+                <!-- Navigation controls -->
+                <div class="test-navigation"
+                    style="display: flex; justify-content: space-between; align-items: center;">
+                    <button id="prev-test-sentence-btn" class="btn btn-secondary" title="Previous Sentence">←
+                    </button>
+                    <div class="test-progress">
+                        <span id="test-current">1</span> / <span id="test-total">0</span>
+                        <span id="test-score" style="margin-left: 1rem;">Score: <span id="test-correct">0</span>/<span
+                                id="test-attempted">0</span></span>
+                    </div>
+                    <button id="next-test-sentence-btn" class="btn btn-secondary" title="Next Sentence">
+                        →</button>
                 </div>
 
                 <div class="test-prompt">
@@ -169,13 +192,14 @@
                     <!-- Writing Test -->
                     <div id="writing-test-input" class="hidden">
                         <textarea id="test-answer-input" rows="3" placeholder="Type your answer here..."></textarea>
-                        <button id="submit-answer-btn" class="btn btn-primary" data-i18n="common.submit">Submit
+                        <button id="submit-answer-btn" class="btn btn-primary btn-full-width"
+                            data-i18n="common.submit">Submit
                             Answer</button>
                     </div>
 
                     <!-- Speaking Test -->
                     <div id="speaking-test-input" class="hidden">
-                        <button id="speak-answer-btn" class="btn btn-primary btn-large">🎤 <span
+                        <button id="speak-answer-btn" class="btn btn-primary btn-large btn-full-width">🎤 <span
                                 data-i18n="test.speakAnswer"></span></button>
                         <div id="speaking-status" class="recording-status"></div>
                         <div id="recognized-text" class="recognized-text hidden"></div>
@@ -185,7 +209,8 @@
                 <div id="test-feedback" class="test-feedback hidden">
                     <div id="feedback-message" class="feedback-message"></div>
                     <div id="feedback-comparison" class="feedback-comparison"></div>
-                    <button id="next-test-btn" class="btn btn-primary" data-i18n="test.nextSentence"></button>
+                    <button id="next-test-btn" class="btn btn-primary btn-full-width"
+                        data-i18n="test.nextSentence"></button>
                 </div>
 
                 <div id="test-complete" class="test-complete hidden">
@@ -197,7 +222,7 @@
                     </div>
                     <div class="test-actions">
                         <button id="retry-test-btn" class="btn btn-primary" data-i18n="test.retryTest"></button>
-                        <button id="back-to-player-btn" class="btn btn-secondary"
+                        <button id="back-to-player-btn" class="btn btn-secondary btn-full-width"
                             data-i18n="test.backToPlayer"></button>
                     </div>
                 </div>
@@ -206,6 +231,97 @@
 
         <!-- Hidden file inputs -->
         <input type="file" id="import-text-file-input" accept=".txt" style="display: none;">
+
+        <!-- Theme Selector Modal -->
+        <div id="theme-selector-modal" class="modal hidden">
+            <div class="modal-content" style="max-width: 600px;">
+                <div class="modal-header">
+                    <h2>🎨 Choose Theme</h2>
+                    <button id="close-theme-selector-btn" class="btn btn-icon">×</button>
+                </div>
+
+                <div class="theme-grid"
+                    style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; padding: 1rem;">
+                    <div class="theme-option" data-theme="dark">
+                        <div class="theme-preview"
+                            style="background: linear-gradient(135deg, #0f0f1e 0%, #1a1a2e 50%, #252541 100%); border: 2px solid #6c5ce7;">
+                            <div style="padding: 1rem;">
+                                <div
+                                    style="width: 100%; height: 50px; background: #6c5ce7; border-radius: 8px; margin-bottom: 0.5rem;">
+                                </div>
+                                <div style="width: 70%; height: 20px; background: #a29bfe; border-radius: 4px;"></div>
+                            </div>
+                        </div>
+                        <div class="theme-name">🟣 Dark Purple</div>
+                    </div>
+
+                    <div class="theme-option" data-theme="light">
+                        <div class="theme-preview"
+                            style="background: linear-gradient(135deg, #f5f5f7 0%, #ffffff 50%, #e8e8ed 100%); border: 2px solid #5e4db2;">
+                            <div style="padding: 1rem;">
+                                <div
+                                    style="width: 100%; height: 50px; background: #5e4db2; border-radius: 8px; margin-bottom: 0.5rem;">
+                                </div>
+                                <div style="width: 70%; height: 20px; background: #8b7fc7; border-radius: 4px;"></div>
+                            </div>
+                        </div>
+                        <div class="theme-name">☀️ Light</div>
+                    </div>
+
+                    <div class="theme-option" data-theme="ocean">
+                        <div class="theme-preview"
+                            style="background: linear-gradient(135deg, #0a1929 0%, #132f4c 50%, #1e4976 100%); border: 2px solid #00b4d8;">
+                            <div style="padding: 1rem;">
+                                <div
+                                    style="width: 100%; height: 50px; background: #00b4d8; border-radius: 8px; margin-bottom: 0.5rem;">
+                                </div>
+                                <div style="width: 70%; height: 20px; background: #48cae4; border-radius: 4px;"></div>
+                            </div>
+                        </div>
+                        <div class="theme-name">🌊 Ocean</div>
+                    </div>
+
+                    <div class="theme-option" data-theme="forest">
+                        <div class="theme-preview"
+                            style="background: linear-gradient(135deg, #0d1b0d 0%, #1a2f1a 50%, #2d4a2d 100%); border: 2px solid #52b788;">
+                            <div style="padding: 1rem;">
+                                <div
+                                    style="width: 100%; height: 50px; background: #52b788; border-radius: 8px; margin-bottom: 0.5rem;">
+                                </div>
+                                <div style="width: 70%; height: 20px; background: #74c69d; border-radius: 4px;"></div>
+                            </div>
+                        </div>
+                        <div class="theme-name">🌲 Forest</div>
+                    </div>
+
+                    <div class="theme-option" data-theme="sunset">
+                        <div class="theme-preview"
+                            style="background: linear-gradient(135deg, #1a0f14 0%, #2d1b24 50%, #4a2c3a 100%); border: 2px solid #ff6b9d;">
+                            <div style="padding: 1rem;">
+                                <div
+                                    style="width: 100%; height: 50px; background: #ff6b9d; border-radius: 8px; margin-bottom: 0.5rem;">
+                                </div>
+                                <div style="width: 70%; height: 20px; background: #ffa6c1; border-radius: 4px;"></div>
+                            </div>
+                        </div>
+                        <div class="theme-name">🌅 Sunset</div>
+                    </div>
+
+                    <div class="theme-option" data-theme="midnight">
+                        <div class="theme-preview"
+                            style="background: linear-gradient(135deg, #000000 0%, #0d0d0d 50%, #1a1a1a 100%); border: 2px solid #ffffff;">
+                            <div style="padding: 1rem;">
+                                <div
+                                    style="width: 100%; height: 50px; background: #ffffff; border-radius: 8px; margin-bottom: 0.5rem;">
+                                </div>
+                                <div style="width: 70%; height: 20px; background: #e0e0e0; border-radius: 4px;"></div>
+                            </div>
+                        </div>
+                        <div class="theme-name">🌑 Midnight</div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Sentence Editor Modal -->
         <div id="editor-modal" class="modal hidden">

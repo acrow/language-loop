@@ -160,6 +160,12 @@ class TestManager {
         this.currentIndex++;
     }
 
+    previousSentence() {
+        if (this.currentIndex > 0) {
+            this.currentIndex--;
+        }
+    }
+
     getProgress() {
         return {
             current: this.currentIndex + 1,

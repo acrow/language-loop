@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IndexedDB Diagnostic Tool</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        button {
+            background: #6c5ce7;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #5a4bc5;
+        }
+
+        pre {
+            background: #f8f8f8;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            max-height: 400px;
+        }
+
+        .error {
+            color: #e63946;
+            font-weight: bold;
+        }
+
+        .success {
+            color: #00d4aa;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔍 IndexedDB Diagnostic Tool</h1>
+    <p>This tool will help diagnose the empty playlist issue.</p>
+
+    <div class="section">
+        <h2>Step 1: Check IndexedDB Data</h2>
+        <button onclick="checkIndexedDB()">Check Database</button>
+        <div id="db-result"></div>
+    </div>
+
+    <div class="section">
+        <h2>Step 2: View All Playlists</h2>
+        <button onclick="viewPlaylists()">View Playlists</button>
+        <div id="playlists-result"></div>
+    </div>
+
+    <div class="section">
+        <h2>Step 3: View All Sentences</h2>
+        <button onclick="viewSentences()">View Sentences</button>
+        <div id="sentences-result"></div>
+    </div>
+
+    <div class="section">
+        <h2>Step 4: Check Settings</h2>
+        <button onclick="viewSettings()">View Settings</button>
+        <div id="settings-result"></div>
+    </div>
+
+    <div class="section">
+        <h2>Recovery Options</h2>
+        <button onclick="exportData()">Export All Data (Backup)</button>
+        <button onclick="clearThemeSetting()">Clear Theme Setting Only</button>
+        <p><small>If data exists but isn't showing, try clearing the theme setting and refreshing the app.</small></p>
+    </div>
+
+    <script>
+        const DB_NAME = 'LanguageLoop';
+        const DB_VERSION = 1;
+
+        async function openDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => resolve(request.result);
+            });
+        }
+
+        async function checkIndexedDB() {
+            const result = document.getElementById('db-result');
+            result.innerHTML = '<p>Checking database...</p>';
+
+            try {
+                const db = await openDB();
+                const stores = Array.from(db.objectStoreNames);
+                result.innerHTML = `
+                    <p class="success">✅ Database found: ${DB_NAME}</p>
+                    <p>Object Stores: ${stores.join(', ')}</p>
+                `;
+                db.close();
+            } catch (error) {
+                result.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+            }
+        }
+
+        async function viewPlaylists() {
+            const result = document.getElementById('playlists-result');
+            result.innerHTML = '<p>Loading playlists...</p>';
+
+            try {
+                const db = await openDB();
+                const tx = db.transaction('playlists', 'readonly');
+                const store = tx.objectStore('playlists');
+                const request = store.getAll();
+
+                request.onsuccess = () => {
+                    const playlists = request.result;
+                    if (playlists.length === 0) {
+                        result.innerHTML = '<p class="error">❌ No playlists found in database!</p>';
+                    } else {
+                        result.innerHTML = `
+                            <p class="success">✅ Found ${playlists.length} playlist(s)</p>
+                            <pre>${JSON.stringify(playlists, null, 2)}</pre>
+                        `;
+                    }
+                    db.close();
+                };
+
+                request.onerror = () => {
+                    result.innerHTML = `<p class="error">❌ Error reading playlists: ${request.error}</p>`;
+                    db.close();
+                };
+            } catch (error) {
+                result.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+            }
+        }
+
+        async function viewSentences() {
+            const result = document.getElementById('sentences-result');
+            result.innerHTML = '<p>Loading sentences...</p>';
+
+            try {
+                const db = await openDB();
+                const tx = db.transaction('sentences', 'readonly');
+                const store = tx.objectStore('sentences');
+                const request = store.getAll();
+
+                request.onsuccess = () => {
+                    const sentences = request.result;
+                    if (sentences.length === 0) {
+                        result.innerHTML = '<p class="error">❌ No sentences found in database!</p>';
+                    } else {
+                        result.innerHTML = `
+                            <p class="success">✅ Found ${sentences.length} sentence(s)</p>
+                            <pre>${JSON.stringify(sentences, null, 2)}</pre>
+                        `;
+                    }
+                    db.close();
+                };
+
+                request.onerror = () => {
+                    result.innerHTML = `<p class="error">❌ Error reading sentences: ${request.error}</p>`;
+                    db.close();
+                };
+            } catch (error) {
+                result.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+            }
+        }
+
+        async function viewSettings() {
+            const result = document.getElementById('settings-result');
+            result.innerHTML = '<p>Loading settings...</p>';
+
+            try {
+                const db = await openDB();
+                const tx = db.transaction('settings', 'readonly');
+                const store = tx.objectStore('settings');
+                const request = store.getAll();
+
+                request.onsuccess = () => {
+                    const settings = request.result;
+                    result.innerHTML = `
+                        <p class="success">✅ Settings found</p>
+                        <pre>${JSON.stringify(settings, null, 2)}</pre>
+                    `;
+                    db.close();
+                };
+
+                request.onerror = () => {
+                    result.innerHTML = `<p class="error">❌ Error reading settings: ${request.error}</p>`;
+                    db.close();
+                };
+            } catch (error) {
+                result.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+            }
+        }
+
+        async function clearThemeSetting() {
+            if (!confirm('Clear theme setting? This will reset to default theme.')) return;
+
+            try {
+                const db = await openDB();
+                const tx = db.transaction('settings', 'readwrite');
+                const store = tx.objectStore('settings');
+                await store.delete('theme');
+                alert('✅ Theme setting cleared! Refresh the main app.');
+                db.close();
+            } catch (error) {
+                alert(`❌ Error: ${error.message}`);
+            }
+        }
+
+        async function exportData() {
+            try {
+                const db = await openDB();
+                const data = {};
+
+                // Export playlists
+                const playlistsTx = db.transaction('playlists', 'readonly');
+                const playlistsStore = playlistsTx.objectStore('playlists');
+                const playlistsReq = playlistsStore.getAll();
+
+                playlistsReq.onsuccess = async () => {
+                    data.playlists = playlistsReq.result;
+
+                    // Export sentences
+                    const sentencesTx = db.transaction('sentences', 'readonly');
+                    const sentencesStore = sentencesTx.objectStore('sentences');
+                    const sentencesReq = sentencesStore.getAll();
+
+                    sentencesReq.onsuccess = async () => {
+                        data.sentences = sentencesReq.result;
+
+                        // Export settings
+                        const settingsTx = db.transaction('settings', 'readonly');
+                        const settingsStore = settingsTx.objectStore('settings');
+                        const settingsReq = settingsStore.getAll();
+
+                        settingsReq.onsuccess = () => {
+                            data.settings = settingsReq.result;
+
+                            // Download as JSON
+                            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `language-loop-backup-${Date.now()}.json`;
+                            a.click();
+                            URL.revokeObjectURL(url);
+                            alert('✅ Data exported successfully!');
+                            db.close();
+                        };
+                    };
+                };
+            } catch (error) {
+                alert(`❌ Error: ${error.message}`);
+            }
+        }
+    </script>
+</body>
+
+</html>
