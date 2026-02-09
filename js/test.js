@@ -74,9 +74,13 @@ class TestManager {
         return text
             .toLowerCase()
             .trim()
-            // Remove all punctuation and special characters
-            .replace(/[.,!?;:'""\u201c\u201d\u2018\u2019\u3001\u3002\uff0c\uff01\uff1f\uff1b\uff1a\u300c\u300d\u300e\u300f\u2026\u2014\u2013\-\(\)\[\]\{\}]/g, '')
-            .replace(/\s+/g, ' '); // Normalize whitespace
+            // Remove all punctuation from all languages using Unicode categories
+            // \p{P} matches any Unicode punctuation character (all languages)
+            // \p{S} matches symbols like ©, ®, ™, etc.
+            .replace(/[\p{P}\p{S}]/gu, '')
+            // Normalize whitespace
+            .replace(/\s+/g, ' ')
+            .trim();
     }
 
     calculateSimilarity(str1, str2) {
