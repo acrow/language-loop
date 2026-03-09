@@ -604,6 +604,14 @@ body {
     font-size: 0.875rem;
 }
 
+.sentence-memo {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-style: italic;
+    margin-top: 0.25rem;
+    opacity: 0.8;
+}
+
 .sentence-actions {
     display: flex;
     gap: var(--spacing-xs);

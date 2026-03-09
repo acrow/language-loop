@@ -64,6 +64,7 @@ class PlaylistManager {
             await this.addSentence(newId, {
                 targetText: sentence.targetText,
                 nativeText: sentence.nativeText,
+                memo: sentence.memo || '',
                 customAudio: sentence.customAudio
             });
         }
@@ -85,6 +86,9 @@ class PlaylistManager {
         for (const sentence of sentences) {
             textLines.push(sentence.targetText);
             textLines.push(sentence.nativeText);
+            if (sentence.memo && sentence.memo.trim()) {
+                textLines.push(`# ${sentence.memo.trim()}`);
+            }
         }
 
         const text = textLines.join('\n');
@@ -187,14 +191,19 @@ class PlaylistManager {
 
         // Load playlist and apply its settings to audio engine
         const playlist = await storage.getPlaylist(id);
-        if (playlist && playlist.settings) {
-            audioEngine.setPlaybackSettings(
-                playlist.settings.repeatCount,
-                playlist.settings.pauseDuration
-            );
-            audioEngine.speechRate = playlist.settings.speechRate;
-            audioEngine.preferredVoiceName = playlist.settings.preferredVoice;
-            audioEngine.speakNativeLanguage = playlist.settings.speakNative;
+        if (playlist) {
+            // Set the playlist's target language for TTS fallback
+            audioEngine.currentPlaylistLang = playlist.targetLang || 'en-US';
+
+            if (playlist.settings) {
+                audioEngine.setPlaybackSettings(
+                    playlist.settings.repeatCount,
+                    playlist.settings.pauseDuration
+                );
+                audioEngine.speechRate = playlist.settings.speechRate;
+                audioEngine.preferredVoiceName = playlist.settings.preferredVoice;
+                audioEngine.speakNativeLanguage = playlist.settings.speakNative;
+            }
         }
 
         // Update last played timestamp
@@ -215,6 +224,7 @@ class PlaylistManager {
             playlistId,
             targetText: sentenceData.targetText,
             nativeText: sentenceData.nativeText,
+            memo: sentenceData.memo || '',
             targetLang: playlist.targetLang,
             nativeLang: playlist.nativeLang,
             customAudio: sentenceData.customAudio || null,

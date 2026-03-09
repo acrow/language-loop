@@ -512,6 +512,7 @@ class UIManager {
             <div class="sentence-content">
                 <div class="sentence-target">${this.escapeHtml(sentence.targetText)}</div>
                 <div class="sentence-native">${this.escapeHtml(sentence.nativeText)}</div>
+                ${sentence.memo ? `<div class="sentence-memo">📝 ${this.escapeHtml(sentence.memo)}</div>` : ''}
             </div>
             <div class="sentence-actions">
                 <button class="btn edit-sentence-btn">Edit</button>
@@ -969,6 +970,7 @@ class UIManager {
         document.getElementById('editor-title').textContent = sentence ? i18n.t('sentence.editSentence') : i18n.t('sentence.addSentence');
         document.getElementById('target-text-input').value = sentence?.targetText || '';
         document.getElementById('native-text-input').value = sentence?.nativeText || '';
+        document.getElementById('memo-input').value = sentence?.memo || '';
 
         this.updateRecordingUI();
         this.showModal('editor-modal');
@@ -991,6 +993,7 @@ class UIManager {
         const sentenceData = {
             targetText,
             nativeText,
+            memo: document.getElementById('memo-input').value.trim(),
             customAudio: this.recordedAudio
         };
 

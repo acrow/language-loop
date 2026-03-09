@@ -246,11 +246,16 @@ class StorageManager {
             version: 1,
             playlist: {
                 name: playlist.name,
+                targetLang: playlist.targetLang,
+                nativeLang: playlist.nativeLang,
+                icon: playlist.icon,
+                description: playlist.description,
                 createdAt: playlist.createdAt
             },
             sentences: sentencesWithAudio.map(s => ({
                 targetText: s.targetText,
                 nativeText: s.nativeText,
+                memo: s.memo || '',
                 targetLang: s.targetLang,
                 nativeLang: s.nativeLang,
                 customAudio: s.customAudio,
@@ -265,7 +270,13 @@ class StorageManager {
         const data = typeof jsonData === 'string' ? JSON.parse(jsonData) : jsonData;
 
         // Create new playlist
-        const playlistId = await this.createPlaylist(data.playlist.name);
+        const playlistId = await this.createPlaylist(
+            data.playlist.name,
+            data.playlist.targetLang,
+            data.playlist.nativeLang,
+            data.playlist.icon,
+            data.playlist.description
+        );
 
         // Import sentences
         const sentencePromises = data.sentences.map(async (sentence, index) => {
@@ -278,6 +289,7 @@ class StorageManager {
                 playlistId,
                 targetText: sentence.targetText,
                 nativeText: sentence.nativeText,
+                memo: sentence.memo || '',
                 targetLang: sentence.targetLang,
                 nativeLang: sentence.nativeLang,
                 customAudio,

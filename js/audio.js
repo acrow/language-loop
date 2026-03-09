@@ -5,6 +5,7 @@ class AudioEngine {
         this.currentPlaylist = [];
         this.currentIndex = 0;
         this.repeatCount = 2;
+        this.currentPlaylistLang = 'en-US'; // Fallback lang for sentences without targetLang
         this.pauseDuration = 1000; // milliseconds
         this.currentRepeat = 0;
         this.isPlaying = false;
@@ -184,7 +185,9 @@ class AudioEngine {
                 await this.playCustomAudio(sentence.customAudio);
             } else {
                 // Use preferred voice for target language
-                await this.playTTS(sentence.targetText, sentence.targetLang, this.preferredVoiceName);
+                // Use sentence.targetLang if available, otherwise fall back to playlist's language
+                const ttsLang = sentence.targetLang || this.currentPlaylistLang;
+                await this.playTTS(sentence.targetText, ttsLang, this.preferredVoiceName);
             }
 
             // If this was a jump (user clicked next/prev/sentence), don't continue with repetition
