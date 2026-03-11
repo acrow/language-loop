@@ -290,8 +290,9 @@ class StorageManager {
                 targetText: sentence.targetText,
                 nativeText: sentence.nativeText,
                 memo: sentence.memo || '',
-                targetLang: sentence.targetLang,
-                nativeLang: sentence.nativeLang,
+                // Fall back to playlist-level language if sentence-level is missing
+                targetLang: sentence.targetLang || data.playlist.targetLang,
+                nativeLang: sentence.nativeLang || data.playlist.nativeLang,
                 customAudio,
                 order: sentence.order !== undefined ? sentence.order : index
             });

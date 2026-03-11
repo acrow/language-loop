@@ -92,6 +92,16 @@ class UIManager {
             this.saveSentence();
         });
 
+        // Memo toggle
+        document.getElementById('toggle-memo-btn')?.addEventListener('click', () => {
+            const memoSection = document.getElementById('memo-section');
+            const memoArrow = document.getElementById('toggle-memo-arrow');
+            const memoLabel = document.getElementById('toggle-memo-label');
+            const isHidden = memoSection.classList.toggle('hidden');
+            memoArrow.textContent = isHidden ? '▼' : '▲';
+            memoLabel.textContent = isHidden ? 'Add Memo (Optional)' : 'Memo (Optional)';
+        });
+
         // Recording
         document.getElementById('record-btn')?.addEventListener('click', () => {
             this.toggleRecording();
@@ -972,6 +982,23 @@ class UIManager {
         document.getElementById('native-text-input').value = sentence?.nativeText || '';
         document.getElementById('memo-input').value = sentence?.memo || '';
 
+        // Set up memo toggle button
+        const memoSection = document.getElementById('memo-section');
+        const memoArrow = document.getElementById('toggle-memo-arrow');
+        const memoLabel = document.getElementById('toggle-memo-label');
+        const hasMemo = sentence?.memo && sentence.memo.trim();
+        if (hasMemo) {
+            // If editing a sentence that already has a memo, show it expanded
+            memoSection.classList.remove('hidden');
+            memoArrow.textContent = '▲';
+            memoLabel.textContent = 'Memo (Optional)';
+        } else {
+            // Default: collapsed
+            memoSection.classList.add('hidden');
+            memoArrow.textContent = '▼';
+            memoLabel.textContent = 'Add Memo (Optional)';
+        }
+
         this.updateRecordingUI();
         this.showModal('editor-modal');
     }
@@ -1012,6 +1039,11 @@ class UIManager {
             if (addAnother && !this.editingSentenceId) {
                 document.getElementById('target-text-input').value = '';
                 document.getElementById('native-text-input').value = '';
+                // Clear and collapse memo section
+                document.getElementById('memo-input').value = '';
+                document.getElementById('memo-section').classList.add('hidden');
+                document.getElementById('toggle-memo-arrow').textContent = '▼';
+                document.getElementById('toggle-memo-label').textContent = 'Add Memo (Optional)';
                 this.recordedAudio = null;
                 this.updateRecordingUI();
                 document.getElementById('target-text-input').focus();
