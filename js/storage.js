@@ -226,6 +226,16 @@ class StorageManager {
         });
     }
 
+    // Playlist Order
+    async savePlaylistOrder(orderedIds) {
+        return this.setSetting('playlistOrder', orderedIds);
+    }
+
+    async getPlaylistOrder() {
+        return this.getSetting('playlistOrder', null);
+    }
+
+
     // Export/Import Operations
     async exportPlaylist(playlistId) {
         const playlist = await this.getPlaylist(playlistId);

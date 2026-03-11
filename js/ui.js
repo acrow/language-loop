@@ -438,19 +438,90 @@ class UIManager {
         emptyState.classList.add('hidden');
         container.innerHTML = '';
 
-        // Sort playlists by creation date (newest first)
-        playlists.sort((a, b) => b.createdAt - a.createdAt);
+        // Apply saved order; unknown/new playlists go to the front by createdAt
+        const savedOrder = await storage.getPlaylistOrder();
+        if (savedOrder && savedOrder.length > 0) {
+            const orderMap = new Map(savedOrder.map((id, idx) => [id, idx]));
+            playlists.sort((a, b) => {
+                const ia = orderMap.has(a.id) ? orderMap.get(a.id) : -a.createdAt;
+                const ib = orderMap.has(b.id) ? orderMap.get(b.id) : -b.createdAt;
+                return ia - ib;
+            });
+        } else {
+            // Default: newest first
+            playlists.sort((a, b) => b.createdAt - a.createdAt);
+        }
 
         for (const playlist of playlists) {
             const count = await playlistManager.getSentenceCount(playlist.id);
             const card = this.createPlaylistCard(playlist, count);
             container.appendChild(card);
         }
+
+        // Attach drag-and-drop to the container
+        this._setupPlaylistDragDrop(container);
+    }
+
+    _setupPlaylistDragDrop(container) {
+        let dragSrc = null;
+
+        container.querySelectorAll('.playlist-card').forEach(card => {
+            card.addEventListener('dragstart', (e) => {
+                dragSrc = card;
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', card.dataset.playlistId);
+                // Defer class to allow browser to capture drag image
+                setTimeout(() => card.classList.add('dragging'), 0);
+            });
+
+            card.addEventListener('dragend', () => {
+                card.classList.remove('dragging');
+                container.querySelectorAll('.playlist-card').forEach(c => c.classList.remove('drag-over'));
+                dragSrc = null;
+            });
+
+            card.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                if (card !== dragSrc) {
+                    container.querySelectorAll('.playlist-card').forEach(c => c.classList.remove('drag-over'));
+                    card.classList.add('drag-over');
+                }
+            });
+
+            card.addEventListener('dragleave', () => {
+                card.classList.remove('drag-over');
+            });
+
+            card.addEventListener('drop', async (e) => {
+                e.preventDefault();
+                card.classList.remove('drag-over');
+                if (!dragSrc || dragSrc === card) return;
+
+                // Reorder DOM
+                const cards = [...container.querySelectorAll('.playlist-card')];
+                const srcIdx = cards.indexOf(dragSrc);
+                const dstIdx = cards.indexOf(card);
+
+                if (srcIdx < dstIdx) {
+                    container.insertBefore(dragSrc, card.nextSibling);
+                } else {
+                    container.insertBefore(dragSrc, card);
+                }
+
+                // Persist the new order
+                const newOrder = [...container.querySelectorAll('.playlist-card')]
+                    .map(c => parseInt(c.dataset.playlistId));
+                await storage.savePlaylistOrder(newOrder);
+            });
+        });
     }
 
     createPlaylistCard(playlist, sentenceCount) {
         const card = document.createElement('div');
         card.className = 'playlist-card';
+        card.draggable = true;
+        card.dataset.playlistId = playlist.id;
 
         // Get language display names
         const langNames = {
@@ -470,6 +541,7 @@ class UIManager {
         const description = playlist.description || '';
 
         card.innerHTML = `
+            <div class="playlist-drag-handle" title="Drag to reorder">⋮⋮</div>
             <div class="playlist-icon">${this.escapeHtml(icon)}</div>
             <div class="playlist-info">
                 <h3>${this.escapeHtml(playlist.name)}</h3>
@@ -481,8 +553,11 @@ class UIManager {
             </div>
         `;
 
-        card.addEventListener('click', () => {
-            this.showPlayerView(playlist.id);
+        // Click on card body (not drag handle) opens player
+        card.addEventListener('click', (e) => {
+            if (!e.target.classList.contains('playlist-drag-handle')) {
+                this.showPlayerView(playlist.id);
+            }
         });
 
         return card;
