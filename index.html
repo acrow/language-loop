@@ -578,6 +578,14 @@
                             placeholder="What is this playlist for?"></textarea>
                     </div>
 
+                    <div class="form-group">
+                        <label for="merge-playlist-select" data-i18n="playlist.mergePlaylist">Merge from Another Playlist (Optional)</label>
+                        <select id="merge-playlist-select">
+                            <option value="">-- Select Playlist to Merge --</option>
+                        </select>
+                        <small data-i18n="playlist.mergePlaylistDesc">Sentences from the selected playlist will be added (duplicates ignored). The selected playlist will then be deleted.</small>
+                    </div>
+
                     <div class="form-actions">
                         <button type="button" id="cancel-edit-playlist-btn" class="btn btn-secondary"
                             data-i18n="common.cancel"></button>

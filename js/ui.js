@@ -794,6 +794,23 @@ class UIManager {
             }
         });
 
+        // Populate merge playlist dropdown
+        const mergeSelect = document.getElementById('merge-playlist-select');
+        if (mergeSelect) {
+            mergeSelect.innerHTML = '<option value="" data-i18n="playlist.mergeSelectOption">-- Select Playlist to Merge --</option>';
+            const allPlaylists = await playlistManager.getAllPlaylists();
+            allPlaylists.forEach(p => {
+                if (p.id !== playlist.id && p.targetLang === playlist.targetLang) {
+                    const option = document.createElement('option');
+                    option.value = p.id;
+                    option.textContent = p.name;
+                    mergeSelect.appendChild(option);
+                }
+            });
+            // Ensure i18n is reapplied to the newly added default option
+            i18n.updateUI();
+        }
+
         this.showModal('edit-playlist-modal');
     }
 
@@ -851,13 +868,38 @@ class UIManager {
                 description
             });
 
+            // Handle playlist merge
+            let mergeMessage = '';
+            const mergeSelect = document.getElementById('merge-playlist-select');
+            const mergePlaylistId = mergeSelect ? mergeSelect.value : '';
+
+            if (mergePlaylistId) {
+                const mergePlaylist = await playlistManager.getPlaylist(parseInt(mergePlaylistId));
+                if (mergePlaylist) {
+                    const confirmMsg = i18n.t('playlist.mergePlaylistConfirm', { playlistName: mergePlaylist.name })
+                        || `Are you sure you want to merge "${mergePlaylist.name}" into this playlist?\n\nSentences will be added (duplicates ignored) and "${mergePlaylist.name}" will be deleted. This cannot be undone.`;
+
+                    const confirmMerge = await dialog.confirm(confirmMsg, i18n.t('playlist.mergePlaylist') || 'Merge Playlist');
+
+                    if (confirmMerge) {
+                        this.showToast(i18n.t('playlist.mergingWait') || 'Merging playlists... Please wait.');
+                        const addedCount = await playlistManager.mergePlaylists(playlistManager.currentPlaylistId, parseInt(mergePlaylistId));
+                        mergeMessage = i18n.t('playlist.mergePlaylistSuccess', { count: addedCount }) || `Merged successfully! Added ${addedCount} new sentence(s).`;
+                    }
+                }
+            }
+
             this.hideModal('edit-playlist-modal');
 
             // Refresh display
             await this.renderPlaylists();
             await this.showPlayerView(playlistManager.currentPlaylistId);
 
-            this.showToast(`Playlist "${name}" updated successfully!`);
+            if (mergeMessage) {
+                this.showToast(mergeMessage);
+            } else {
+                this.showToast(i18n.t('playlist.updateSuccess', { name }) || `Playlist "${name}" updated successfully!`);
+            }
         } catch (error) {
             await dialog.alert('Error updating playlist: ' + error.message, 'Error');
         }

@@ -77,6 +77,38 @@ class PlaylistManager {
         return newId;
     }
 
+    async mergePlaylists(targetPlaylistId, sourcePlaylistId) {
+        // Get source sentences
+        const sourceSentences = await storage.getSentencesByPlaylist(sourcePlaylistId);
+        // Get target sentences to check for duplicates
+        const targetSentences = await storage.getSentencesByPlaylist(targetPlaylistId);
+
+        let addedCount = 0;
+
+        for (const sourceSentence of sourceSentences) {
+            // Check for duplicate based on exact target and native text match (case-insensitive)
+            const isDuplicate = targetSentences.some(targetSentence => 
+                targetSentence.targetText.toLowerCase().trim() === sourceSentence.targetText.toLowerCase().trim() &&
+                targetSentence.nativeText.toLowerCase().trim() === sourceSentence.nativeText.toLowerCase().trim()
+            );
+
+            if (!isDuplicate) {
+                await this.addSentence(targetPlaylistId, {
+                    targetText: sourceSentence.targetText,
+                    nativeText: sourceSentence.nativeText,
+                    memo: sourceSentence.memo || '',
+                    customAudio: sourceSentence.customAudio
+                });
+                addedCount++;
+            }
+        }
+
+        // Delete the source playlist
+        await this.deletePlaylist(sourcePlaylistId);
+
+        return addedCount;
+    }
+
     async exportAsText(playlistId) {
         const playlist = await storage.getPlaylist(playlistId);
         const sentences = await storage.getSentencesByPlaylist(playlistId);

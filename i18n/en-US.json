@@ -59,7 +59,14 @@
     "targetLanguageDesc": "The language you want to learn",
     "nativeLanguageDesc": "Your native language for translations",
     "iconDesc": "Choose an emoji to represent this playlist",
-    "descriptionDesc": "Brief description of this playlist"
+    "descriptionDesc": "Brief description of this playlist",
+    "mergePlaylist": "Merge from Another Playlist (Optional)",
+    "mergePlaylistDesc": "Sentences from the selected playlist will be added (duplicates ignored). The selected playlist will then be deleted.",
+    "mergeSelectOption": "-- Select Playlist to Merge --",
+    "mergePlaylistConfirm": "Are you sure you want to merge \"{playlistName}\" into this playlist?\\n\\nSentences will be added (duplicates ignored) and \"{playlistName}\" will be deleted. This cannot be undone.",
+    "mergingWait": "Merging playlists... Please wait.",
+    "mergePlaylistSuccess": "Merged successfully! Added {count} new sentence(s).",
+    "updateSuccess": "Playlist \"{name}\" updated successfully!"
   },
   "sentence": {
     "sentences": "Sentences",

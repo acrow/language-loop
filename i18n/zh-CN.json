@@ -59,7 +59,14 @@
     "targetLanguageDesc": "学习语言",
     "nativeLanguageDesc": "母语",
     "iconDesc": "播放列表的图标",
-    "descriptionDesc": "播放列表的描述"
+    "descriptionDesc": "播放列表的描述",
+    "mergePlaylist": "合并其他播放列表（可选）",
+    "mergePlaylistDesc": "所选播放列表中的句子将被添加（忽略重复项）。合并后该播放列表将被删除。",
+    "mergeSelectOption": "-- 选择要合并的播放列表 --",
+    "mergePlaylistConfirm": "您确定要将“{playlistName}”合并到此播放列表吗？\\n\\n句子将被添加（忽略重复项），并且“{playlistName}”将被删除。此操作无法撤销。",
+    "mergingWait": "正在合并播放列表... 请稍候。",
+    "mergePlaylistSuccess": "合并成功！添加了 {count} 个新句子。",
+    "updateSuccess": "播放列表“{name}”更新成功！"
   },
   "sentence": {
     "sentences": "句子",
