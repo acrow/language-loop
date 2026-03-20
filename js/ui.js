@@ -294,6 +294,10 @@ class UIManager {
             this.showPlayerView(playlistManager.currentPlaylistId);
         });
 
+        document.getElementById('play-test-sentence-btn')?.addEventListener('click', () => {
+            this.playTestSentence();
+        });
+
         document.getElementById('submit-answer-btn')?.addEventListener('click', () => {
             this.submitAnswer();
         });
@@ -1519,6 +1523,27 @@ class UIManager {
     }
 
     // Test Functionality
+    async playTestSentence() {
+        const sentence = testManager.getCurrentSentence();
+        if (!sentence) return;
+
+        const playlist = await playlistManager.getPlaylist(testManager.currentPlaylistId);
+        const lang = sentence.targetLang || (playlist && playlist.targetLang) || 'en-US';
+
+        const btn = document.getElementById('play-test-sentence-btn');
+        if (btn) btn.disabled = true;
+
+        try {
+            if (sentence.customAudio) {
+                await audioEngine.playCustomAudio(sentence.customAudio);
+            } else {
+                await audioEngine.playTTS(sentence.targetText, lang);
+            }
+        } finally {
+            if (btn) btn.disabled = false;
+        }
+    }
+
     async startTest(mode) {
         const success = await testManager.startTest(playlistManager.currentPlaylistId, mode);
         if (!success) return;
