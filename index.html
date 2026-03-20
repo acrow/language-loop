@@ -76,6 +76,7 @@
                 <button id="language-settings-btn" class="btn btn-icon" title="Language Settings">🌐</button>
                 <h1>📚 <span data-i18n="playlist.playlists">My Playlists</span></h1>
                 <div style="display: flex; gap: 0.5rem;">
+                    <button id="cloud-sync-btn" class="btn btn-icon" title="Cloud Sync">☁️</button>
                     <button id="theme-btn-library" class="btn btn-icon" title="Change Theme">🎨</button>
                     <button id="library-menu-btn" class="btn btn-icon" title="Library Menu">⋮</button>
                 </div>
@@ -684,6 +685,50 @@
                 </form>
             </div>
         </div>
+
+        <!-- Cloud Sync Modal -->
+        <div id="cloud-sync-modal" class="modal hidden">
+            <div class="modal-content" style="max-width: 680px;">
+                <div class="modal-header">
+                    <h2>☁️ Cloud Sync</h2>
+                    <button id="close-cloud-sync-btn" class="btn btn-icon">×</button>
+                </div>
+
+                <!-- Auth State -->
+                <div id="cloud-auth-section" style="padding: 1rem; border-bottom: 1px solid var(--border-color);">
+                    <div id="cloud-signed-out">
+                        <p style="margin-bottom: 0.75rem; color: var(--text-secondary);">Sign in with your Google account to upload and download playlists across devices.</p>
+                        <button id="cloud-signin-btn" class="btn btn-primary">🔑 Sign in with Google</button>
+                    </div>
+                    <div id="cloud-signed-in" class="hidden" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                        <span id="cloud-user-info" style="color: var(--text-secondary); font-size: 0.9rem;"></span>
+                        <button id="cloud-signout-btn" class="btn btn-secondary btn-small">Sign Out</button>
+                    </div>
+                </div>
+
+                <!-- Sync Panels (shown when signed in) -->
+                <div id="cloud-panels" class="hidden">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; min-height: 280px;">
+                        <!-- Local Playlists -->
+                        <div style="padding: 1rem; border-right: 1px solid var(--border-color);">
+                            <h3 style="margin-bottom: 0.75rem; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">📱 On This Device</h3>
+                            <div id="cloud-local-list"></div>
+                        </div>
+                        <!-- Cloud Playlists -->
+                        <div style="padding: 1rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                                <h3 style="font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">☁️ In the Cloud</h3>
+                                <button id="cloud-refresh-btn" class="btn btn-small btn-secondary" title="Refresh cloud list">🔄</button>
+                            </div>
+                            <div id="cloud-remote-list"></div>
+                        </div>
+                    </div>
+                    <div style="padding: 0.6rem 1rem; font-size: 0.78rem; color: var(--text-secondary); border-top: 1px solid var(--border-color);">
+                        ⚠️ Custom voice recordings are not uploaded (text only).
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Hidden file input for import -->
@@ -706,6 +751,7 @@
     <script src="js/playlist.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/app.js"></script>
+    <script type="module" src="js/cloud.js"></script>
 </body>
 
 </html>
