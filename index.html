@@ -708,21 +708,24 @@
 
                 <!-- Sync Panels (shown when signed in) -->
                 <div id="cloud-panels" class="hidden">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; min-height: 280px;">
-                        <!-- Local Playlists -->
-                        <div style="padding: 1rem; border-right: 1px solid var(--border-color);">
-                            <h3 style="margin-bottom: 0.75rem; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">📱 On This Device</h3>
-                            <div id="cloud-local-list"></div>
-                        </div>
-                        <!-- Cloud Playlists -->
-                        <div style="padding: 1rem;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-                                <h3 style="font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">☁️ In the Cloud</h3>
-                                <button id="cloud-refresh-btn" class="btn btn-small btn-secondary" title="Refresh cloud list">🔄</button>
-                            </div>
-                            <div id="cloud-remote-list"></div>
-                        </div>
+                    <div class="cloud-tabs">
+                        <button type="button" id="cloud-tab-local" class="cloud-tab active" data-target="cloud-panel-local">📱 On This Device</button>
+                        <button type="button" id="cloud-tab-remote" class="cloud-tab" data-target="cloud-panel-remote">☁️ In the Cloud</button>
                     </div>
+                    
+                    <!-- Local Playlists -->
+                    <div id="cloud-panel-local" class="cloud-panel active">
+                        <div id="cloud-local-list"></div>
+                    </div>
+                    
+                    <!-- Cloud Playlists -->
+                    <div id="cloud-panel-remote" class="cloud-panel hidden">
+                        <div style="display: flex; justify-content: flex-end; margin-bottom: 0.75rem;">
+                            <button id="cloud-refresh-btn" class="btn btn-small btn-secondary" title="Refresh cloud list">🔄 Refresh Cloud List</button>
+                        </div>
+                        <div id="cloud-remote-list"></div>
+                    </div>
+                    
                     <div style="padding: 0.6rem 1rem; font-size: 0.78rem; color: var(--text-secondary); border-top: 1px solid var(--border-color);">
                         ⚠️ Custom voice recordings are not uploaded (text only).
                     </div>

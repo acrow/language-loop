@@ -12,6 +12,23 @@ class UIManager {
         this.populateLanguageDropdowns();
         this.setupEventListeners();
         this.setupAudioEngineListeners();
+        this.setupCloudSyncListener();
+    }
+
+    setupCloudSyncListener() {
+        const tryInit = () => {
+            if (!window.cloudService) {
+                setTimeout(tryInit, 200);
+                return;
+            }
+            if (!this._cloudAuthListenerSet) {
+                this._cloudAuthListenerSet = true;
+                window.cloudService.onAuthChange((user) => {
+                    this._updateCloudAuthUI(user);
+                });
+            }
+        };
+        tryInit();
     }
 
     populateLanguageDropdowns() {
@@ -390,6 +407,31 @@ class UIManager {
 
         document.getElementById('cloud-refresh-btn')?.addEventListener('click', () => {
             this.refreshCloudList();
+        });
+
+        // Cloud Sync Tabs
+        document.querySelectorAll('.cloud-tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                // Remove active class from all tabs
+                document.querySelectorAll('.cloud-tab').forEach(t => t.classList.remove('active'));
+                // Hide all panels
+                document.querySelectorAll('.cloud-panel').forEach(p => {
+                    p.classList.remove('active');
+                    p.classList.add('hidden');
+                });
+                
+                // Add active class to clicked tab
+                const targetTab = e.currentTarget;
+                targetTab.classList.add('active');
+                
+                // Show target panel
+                const targetPanelId = targetTab.getAttribute('data-target');
+                const targetPanel = document.getElementById(targetPanelId);
+                if (targetPanel) {
+                    targetPanel.classList.remove('hidden');
+                    targetPanel.classList.add('active');
+                }
+            });
         });
     }
 
@@ -1893,25 +1935,10 @@ const ui = new UIManager();
 
 UIManager.prototype.showCloudSyncModal = function () {
     this.showModal('cloud-sync-modal');
-
-    // Wait for cloudService to be available (module load timing)
-    const tryInit = () => {
-        if (!window.cloudService) {
-            setTimeout(tryInit, 200);
-            return;
-        }
-        // Register auth change listener once
-        if (!this._cloudAuthListenerSet) {
-            this._cloudAuthListenerSet = true;
-            window.cloudService.onAuthChange((user) => {
-                this._updateCloudAuthUI(user);
-            });
-        } else {
-            // Already registered — just refresh UI with current state
-            this._updateCloudAuthUI(window.cloudService.getCurrentUser());
-        }
-    };
-    tryInit();
+    if (window.cloudService && window.cloudService.getCurrentUser()) {
+        this.refreshCloudList();
+        this._renderLocalForUpload();
+    }
 };
 
 UIManager.prototype._updateCloudAuthUI = function (user) {
@@ -1928,11 +1955,46 @@ UIManager.prototype._updateCloudAuthUI = function (user) {
         // Load both lists
         this._renderLocalForUpload();
         this.refreshCloudList();
+        
+        // Auto-sync missing cloud playlists to local device
+        this._autoSyncCloudPlaylists();
     } else {
         signedOutEl.classList.remove('hidden');
         signedInEl.classList.add('hidden');
         panelsEl.classList.add('hidden');
         userInfoEl.textContent = '';
+    }
+};
+
+UIManager.prototype._autoSyncCloudPlaylists = async function() {
+    if (!window.cloudService || !window.cloudService.getCurrentUser()) return;
+    try {
+        const cloudDocs = await window.cloudService.listPlaylists();
+        const local = await playlistManager.getAllPlaylists();
+        const localNames = new Set(local.map(p => p.name));
+        
+        let syncedCount = 0;
+        for (const d of cloudDocs) {
+            const name = d.playlist?.name;
+            if (name && !localNames.has(name)) {
+                // Not found locally by name, so download
+                const cloudData = await window.cloudService.getPlaylist(d.docId);
+                await storage.importPlaylist(cloudData);
+                syncedCount++;
+            }
+        }
+        if (syncedCount > 0) {
+            this.showToast(`Auto-synced ${syncedCount} new playlist${syncedCount > 1 ? 's' : ''} from cloud!`);
+            if (this.currentView === 'library-view') {
+                await this.renderPlaylists();
+            }
+            const modal = document.getElementById('cloud-sync-modal');
+            if (modal && !modal.classList.contains('hidden')) {
+                this._renderLocalForUpload();
+            }
+        }
+    } catch (e) {
+        console.error("Auto-sync failed", e);
     }
 };
 

@@ -1261,3 +1261,44 @@ form {
     color: var(--text-primary);
     font-size: 0.9rem;
 }
+
+/* Cloud Sync Tabs */
+.cloud-tabs {
+    display: flex;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.05);
+    margin-bottom: 1rem;
+}
+
+.cloud-tab {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px; /* overlap border-bottom */
+}
+
+.cloud-tab:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.cloud-tab.active {
+    color: var(--accent-primary);
+    border-bottom-color: var(--accent-primary);
+}
+
+.cloud-panel {
+    display: none;
+    min-height: 280px;
+}
+
+.cloud-panel.active {
+    display: block;
+    animation: fadeIn var(--transition-fast);
+}
