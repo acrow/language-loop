@@ -2035,9 +2035,9 @@ UIManager.prototype._renderLocalForUpload = async function () {
     container.innerHTML = '';
     for (const pl of playlists) {
         const row = document.createElement('div');
-        row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding: 0.4rem 0; border-bottom: 1px solid var(--border-color);';
+        row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding: 0.4rem 0; border-bottom: 1px solid var(--border-color); gap: 0.5rem;';
         row.innerHTML = `
-            <span style="font-size:0.88rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:120px;" title="${this.escapeHtml(pl.name)}">${this.escapeHtml(pl.icon || '📚')} ${this.escapeHtml(pl.name)}</span>
+            <span style="font-size:0.88rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1;" title="${this.escapeHtml(pl.name)}">${this.escapeHtml(pl.icon || '📚')} ${this.escapeHtml(pl.name)}</span>
             <button class="btn btn-small btn-secondary" data-playlist-id="${pl.id}" style="flex-shrink:0; font-size:0.78rem;">☁️ Upload</button>
         `;
         row.querySelector('button').addEventListener('click', (e) => {
