@@ -606,6 +606,15 @@ body {
     background: rgba(108, 92, 231, 0.1);
 }
 
+.sentence-item.disabled {
+    opacity: 0.5;
+}
+
+.sentence-item.disabled .sentence-target,
+.sentence-item.disabled .sentence-native {
+    text-decoration: line-through;
+}
+
 .sentence-item.playing {
     border-color: var(--accent-primary);
     background: rgba(108, 92, 231, 0.15);

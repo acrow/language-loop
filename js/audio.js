@@ -92,9 +92,37 @@ class AudioEngine {
         this.pauseDuration = pauseDuration * 1000; // convert to ms
     }
 
+    findNextEnabledIndex(startIndex, direction = 1) {
+        const total = this.currentPlaylist.length;
+        if (total === 0) return -1;
+        
+        let count = 0;
+        let index = startIndex;
+        
+        while (count < total) {
+            if (!this.currentPlaylist[index].disabled) {
+                return index;
+            }
+            index = (index + direction + total) % total;
+            count++;
+        }
+        
+        return -1; // All disabled
+    }
+
     async play() {
         console.log("play");
         if (this.currentPlaylist.length === 0) return;
+
+        // Skip disabled sentences if starting play
+        if (this.currentPlaylist[this.currentIndex] && this.currentPlaylist[this.currentIndex].disabled) {
+            const nextEnabled = this.findNextEnabledIndex(this.currentIndex, 1);
+            if (nextEnabled === -1) {
+                console.log("All sentences disabled");
+                return;
+            }
+            this.currentIndex = nextEnabled;
+        }
 
         this.isPlaying = true;
         this.isPaused = false;
@@ -133,12 +161,22 @@ class AudioEngine {
 
     next(isJump = true) {
         console.log("next", isJump);
-        this.jumpToSentence((this.currentIndex + 1) % this.currentPlaylist.length, isJump);
+        if (this.currentPlaylist.length === 0) return;
+        const nextIdx = this.findNextEnabledIndex((this.currentIndex + 1) % this.currentPlaylist.length, 1);
+        if (nextIdx !== -1) {
+            this.jumpToSentence(nextIdx, isJump);
+        } else {
+            this.stop();
+        }
     }
 
     previous(isJump = true) {
         console.log("previous", isJump);
-        this.jumpToSentence((this.currentIndex - 1 + this.currentPlaylist.length) % this.currentPlaylist.length, isJump);
+        if (this.currentPlaylist.length === 0) return;
+        const prevIdx = this.findNextEnabledIndex((this.currentIndex - 1 + this.currentPlaylist.length) % this.currentPlaylist.length, -1);
+        if (prevIdx !== -1) {
+            this.jumpToSentence(prevIdx, isJump);
+        }
     }
 
     async jumpToSentence(index, isJump = true) {

@@ -659,6 +659,10 @@ class UIManager {
         item.dataset.index = index;
         item.draggable = true;
 
+        if (sentence.disabled) {
+            item.classList.add('disabled');
+        }
+
         item.innerHTML = `
             <div class="drag-handle">⋮⋮</div>
             <div class="sentence-content">
@@ -668,6 +672,7 @@ class UIManager {
             </div>
             <div class="sentence-actions">
                 <button class="btn edit-sentence-btn">Edit</button>
+                <button class="btn toggle-sentence-btn">${sentence.disabled ? 'Enable' : 'Disable'}</button>
                 <button class="btn danger delete-sentence-btn">Delete</button>
             </div>
         `;
@@ -712,6 +717,25 @@ class UIManager {
         item.querySelector('.edit-sentence-btn').addEventListener('click', (e) => {
             e.stopPropagation();
             this.editSentence(sentence);
+        });
+
+        item.querySelector('.toggle-sentence-btn').addEventListener('click', async (e) => {
+            e.stopPropagation();
+            sentence.disabled = !sentence.disabled;
+            try {
+                await storage.updateSentence(sentence.id, sentence);
+                // Re-render the UI smoothly
+                if (sentence.disabled) {
+                    item.classList.add('disabled');
+                    e.target.textContent = 'Enable';
+                } else {
+                    item.classList.remove('disabled');
+                    e.target.textContent = 'Disable';
+                }
+            } catch (err) {
+                console.error("Failed to toggle sentence state", err);
+                this.showToast('Failed to save state', 'error');
+            }
         });
 
         item.querySelector('.delete-sentence-btn').addEventListener('click', (e) => {
