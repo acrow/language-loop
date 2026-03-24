@@ -2058,10 +2058,10 @@ UIManager.prototype._renderLocalForUpload = async function () {
 
     container.innerHTML = '';
     for (const pl of playlists) {
-        const row = document.createElement('div');
         row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding: 0.4rem 0; border-bottom: 1px solid var(--border-color); gap: 0.5rem;';
+        const vText = pl.version ? ` <span style="color:var(--text-secondary); font-size:0.75rem;">(v${pl.version})</span>` : '';
         row.innerHTML = `
-            <span style="font-size:0.88rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1;" title="${this.escapeHtml(pl.name)}">${this.escapeHtml(pl.icon || '📚')} ${this.escapeHtml(pl.name)}</span>
+            <span style="font-size:0.88rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1;" title="${this.escapeHtml(pl.name)}">${this.escapeHtml(pl.icon || '📚')} ${this.escapeHtml(pl.name)}${vText}</span>
             <button class="btn btn-small btn-secondary" data-playlist-id="${pl.id}" style="flex-shrink:0; font-size:0.78rem;">☁️ Upload</button>
         `;
         row.querySelector('button').addEventListener('click', (e) => {
@@ -2091,13 +2091,14 @@ UIManager.prototype.refreshCloudList = async function () {
         for (const d of docs) {
             const name = d.playlist?.name || 'Untitled';
             const icon = d.playlist?.icon || '📚';
+            const version = d.version || 1;
             const uploadedDate = d.uploadedAt ? new Date(d.uploadedAt).toLocaleDateString() : '';
 
             const row = document.createElement('div');
             row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding: 0.4rem 0; border-bottom: 1px solid var(--border-color); gap: 0.25rem;';
             row.innerHTML = `
                 <div style="overflow:hidden; flex:1;">
-                    <div style="font-size:0.88rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${this.escapeHtml(name)}">${this.escapeHtml(icon)} ${this.escapeHtml(name)}</div>
+                    <div style="font-size:0.88rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${this.escapeHtml(name)}">${this.escapeHtml(icon)} ${this.escapeHtml(name)} <span style="color:var(--text-secondary); font-size:0.75rem;">(v${version})</span></div>
                     <div style="font-size:0.72rem; color:var(--text-secondary);">${uploadedDate}</div>
                 </div>
                 <div style="display:flex; gap:0.25rem; flex-shrink:0;">
@@ -2125,6 +2126,24 @@ UIManager.prototype._uploadToCloud = async function (playlistId, btn) {
     btn.textContent = '⏳';
     try {
         const exportData = await storage.exportPlaylist(playlistId);
+        
+        // Check for version conflict
+        try {
+            const cloudData = await window.cloudService.getPlaylist(exportData.playlist.cloudId);
+            const cloudVersion = cloudData.version || 1;
+            const localVersion = exportData.version || 1;
+            if (cloudVersion > localVersion) {
+                const proceed = await dialog.confirm(`The cloud version (v${cloudVersion}) is newer than your local version (v${localVersion}). Overwrite the cloud playlist anyway?`, 'Version Conflict');
+                if (!proceed) {
+                    btn.textContent = original;
+                    btn.disabled = false;
+                    return;
+                }
+            }
+        } catch(e) {
+            // Document doesn't exist in cloud yet, proceed normally
+        }
+
         await window.cloudService.uploadPlaylist(exportData);
         btn.textContent = '✅';
         this.showToast('Playlist uploaded to cloud!');
@@ -2145,6 +2164,24 @@ UIManager.prototype._downloadFromCloud = async function (docId, btn) {
     btn.textContent = '⏳';
     try {
         const cloudData = await window.cloudService.getPlaylist(docId);
+        
+        // Check for version conflict locally
+        const allLocal = await storage.getAllPlaylists();
+        const existingLocal = cloudData.playlist.cloudId ? allLocal.find(p => p.cloudId === cloudData.playlist.cloudId) : null;
+        
+        if (existingLocal) {
+            const localVersion = existingLocal.version || 1;
+            const cloudVersion = cloudData.version || 1;
+            if (localVersion > cloudVersion) {
+                const proceed = await dialog.confirm(`Your local version (v${localVersion}) is newer than the cloud version (v${cloudVersion}). Overwrite your local playlist anyway?`, 'Version Conflict');
+                if (!proceed) {
+                    btn.textContent = original;
+                    btn.disabled = false;
+                    return;
+                }
+            }
+        }
+
         await storage.importPlaylist(cloudData);
         btn.textContent = '✅';
         this.showToast('Playlist downloaded to device!');

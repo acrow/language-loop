@@ -91,9 +91,12 @@ class CloudService {
             // customAudio intentionally excluded
         }));
 
+        const docId = exportData.playlist.cloudId || `playlist_${Date.now()}`;
+        
         const cloudDoc = {
             version: exportData.version || 1,
             playlist: {
+                cloudId: docId,
                 name: exportData.playlist.name,
                 targetLang: exportData.playlist.targetLang,
                 nativeLang: exportData.playlist.nativeLang,
@@ -106,7 +109,6 @@ class CloudService {
             uploadedBy: this.currentUser.email || ''
         };
 
-        const docId = `playlist_${Date.now()}`;
         const ref = doc(this.db, 'users', uid, 'playlists', docId);
         await setDoc(ref, cloudDoc);
         return docId;

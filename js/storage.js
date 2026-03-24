@@ -46,9 +46,15 @@ class StorageManager {
         });
     }
 
+    generateId() {
+        return 'playlist_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    }
+
     // Playlist Operations
     async createPlaylist(name, targetLang = 'en-US', nativeLang = 'zh-CN', icon = '📚', description = '') {
         const playlist = {
+            cloudId: this.generateId(),
+            version: 1,
             name,
             icon,
             description,
@@ -100,6 +106,12 @@ class StorageManager {
     async updatePlaylist(id, updates) {
         const playlist = await this.getPlaylist(id);
         const updatedPlaylist = { ...playlist, ...updates };
+
+        // Auto-increment version if playlist properties are explicitly modified
+        // and version isn't being manually set (e.g. during import)
+        if (updates.version === undefined) {
+            updatedPlaylist.version = (updatedPlaylist.version || 1) + 1;
+        }
 
         return new Promise((resolve, reject) => {
             const transaction = this.db.transaction(['playlists'], 'readwrite');
@@ -160,25 +172,47 @@ class StorageManager {
             const store = transaction.objectStore('sentences');
             const getRequest = store.get(id);
 
-            getRequest.onsuccess = () => {
+            getRequest.onsuccess = async () => {
                 const sentence = getRequest.result;
                 const updatedSentence = { ...sentence, ...updates };
                 const putRequest = store.put(updatedSentence);
 
-                putRequest.onsuccess = () => resolve(putRequest.result);
+                putRequest.onsuccess = async () => {
+                    // Update playlist version
+                    await this.incrementPlaylistVersion(sentence.playlistId);
+                    resolve(putRequest.result);
+                };
                 putRequest.onerror = () => reject(putRequest.error);
             };
             getRequest.onerror = () => reject(getRequest.error);
         });
     }
 
+    async incrementPlaylistVersion(id) {
+        try {
+            await this.updatePlaylist(id, {}); // empty update triggers version increment
+        } catch(e) { /* ignore if deleted */ }
+    }
+
     async deleteSentence(id) {
+        const sentence = await new Promise((res, rej) => {
+            const tx = this.db.transaction(['sentences'], 'readonly');
+            const req = tx.objectStore('sentences').get(id);
+            req.onsuccess = () => res(req.result);
+            req.onerror = () => rej(req.error);
+        });
+
         return new Promise((resolve, reject) => {
             const transaction = this.db.transaction(['sentences'], 'readwrite');
             const store = transaction.objectStore('sentences');
             const request = store.delete(id);
 
-            request.onsuccess = () => resolve();
+            request.onsuccess = async () => {
+                if (sentence) {
+                    await this.incrementPlaylistVersion(sentence.playlistId);
+                }
+                resolve();
+            };
             request.onerror = () => reject(request.error);
         });
     }
@@ -253,8 +287,9 @@ class StorageManager {
         );
 
         const exportData = {
-            version: 1,
+            version: playlist.version || 1,
             playlist: {
+                cloudId: playlist.cloudId || this.generateId(),
                 name: playlist.name,
                 targetLang: playlist.targetLang,
                 nativeLang: playlist.nativeLang,
@@ -269,6 +304,7 @@ class StorageManager {
                 targetLang: s.targetLang,
                 nativeLang: s.nativeLang,
                 customAudio: s.customAudio,
+                disabled: s.disabled || false,
                 order: s.order
             }))
         };
@@ -278,15 +314,40 @@ class StorageManager {
 
     async importPlaylist(jsonData) {
         const data = typeof jsonData === 'string' ? JSON.parse(jsonData) : jsonData;
+        const cloudId = data.playlist.cloudId;
 
-        // Create new playlist
-        const playlistId = await this.createPlaylist(
-            data.playlist.name,
-            data.playlist.targetLang,
-            data.playlist.nativeLang,
-            data.playlist.icon,
-            data.playlist.description
-        );
+        // Check if playlist with this cloudId already exists
+        const allPlaylists = await this.getAllPlaylists();
+        let existingPlaylist = cloudId ? allPlaylists.find(p => p.cloudId === cloudId) : null;
+        let playlistId;
+
+        if (existingPlaylist) {
+            playlistId = existingPlaylist.id;
+            await this.updatePlaylist(existingPlaylist.id, {
+                version: data.version || 1, // Explicitly set version so it doesn't auto-increment
+                name: data.playlist.name,
+                targetLang: data.playlist.targetLang,
+                nativeLang: data.playlist.nativeLang,
+                icon: data.playlist.icon,
+                description: data.playlist.description
+            });
+            // Delete all existing sentences before importing the new ones
+            await this.deleteSentencesByPlaylist(existingPlaylist.id);
+        } else {
+            // Create new playlist
+            playlistId = await this.createPlaylist(
+                data.playlist.name,
+                data.playlist.targetLang,
+                data.playlist.nativeLang,
+                data.playlist.icon,
+                data.playlist.description
+            );
+            // Overwrite cloudId and version of newly created playlist
+            await this.updatePlaylist(playlistId, {
+                cloudId: cloudId || this.generateId(),
+                version: data.version || 1
+            });
+        }
 
         // Import sentences
         const sentencePromises = data.sentences.map(async (sentence, index) => {
@@ -304,6 +365,7 @@ class StorageManager {
                 targetLang: sentence.targetLang || data.playlist.targetLang,
                 nativeLang: sentence.nativeLang || data.playlist.nativeLang,
                 customAudio,
+                disabled: sentence.disabled || false,
                 order: sentence.order !== undefined ? sentence.order : index
             });
         });
@@ -326,7 +388,7 @@ class StorageManager {
         return fetch(base64).then(res => res.blob());
     }
 
-    // Migration: Ensure all playlists have settings
+    // Migration: Ensure all playlists have settings, cloudId, and version
     async migratePlaylistSettings() {
         const playlists = await this.getAllPlaylists();
         const defaultSettings = {
@@ -338,10 +400,17 @@ class StorageManager {
         };
 
         for (const playlist of playlists) {
+            let updates = {};
             if (!playlist.settings) {
-                await this.updatePlaylist(playlist.id, {
-                    settings: defaultSettings
-                });
+                updates.settings = defaultSettings;
+            }
+            if (!playlist.cloudId) {
+                updates.cloudId = this.generateId();
+                updates.version = 1;
+            }
+            
+            if (Object.keys(updates).length > 0) {
+                await this.updatePlaylist(playlist.id, updates);
             }
         }
     }
