@@ -314,7 +314,8 @@ class StorageManager {
 
     async importPlaylist(jsonData) {
         const data = typeof jsonData === 'string' ? JSON.parse(jsonData) : jsonData;
-        const cloudId = data.playlist.cloudId;
+        // Fallback to data.docId if this is an older playlist from the cloud
+        const cloudId = data.playlist.cloudId || data.docId;
 
         // Check if playlist with this cloudId already exists
         const allPlaylists = await this.getAllPlaylists();

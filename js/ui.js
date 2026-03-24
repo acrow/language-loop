@@ -2058,6 +2058,7 @@ UIManager.prototype._renderLocalForUpload = async function () {
 
     container.innerHTML = '';
     for (const pl of playlists) {
+        const row = document.createElement('div');
         row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding: 0.4rem 0; border-bottom: 1px solid var(--border-color); gap: 0.5rem;';
         const vText = pl.version ? ` <span style="color:var(--text-secondary); font-size:0.75rem;">(v${pl.version})</span>` : '';
         row.innerHTML = `
