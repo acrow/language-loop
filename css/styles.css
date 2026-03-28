@@ -923,6 +923,16 @@ form {
     .native-text {
         font-size: 1rem;
     }
+
+    .sentence-item {
+        flex-wrap: wrap;
+    }
+
+    .sentence-actions {
+        width: 100%;
+        justify-content: flex-end;
+        padding-left: 2rem;
+    }
 }
 
 /* Test View */
