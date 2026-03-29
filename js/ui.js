@@ -1798,9 +1798,11 @@ class UIManager {
             document.getElementById('test-feedback').classList.add('hidden');
             document.getElementById('test-input-area').classList.remove('hidden');
 
-            // Auto-focus the input box for writing test
+            // Auto-focus and select the input box for writing test
             if (testManager.testMode === 'writing') {
-                document.getElementById('test-answer-input').focus();
+                const answerInput = document.getElementById('test-answer-input');
+                answerInput.focus();
+                answerInput.select();
             }
             return;
         }
