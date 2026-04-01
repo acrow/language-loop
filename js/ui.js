@@ -808,6 +808,9 @@ class UIManager {
         const items = document.querySelectorAll('.sentence-item');
         const newOrder = Array.from(items).map(item => parseInt(item.dataset.sentenceId));
 
+        // Update database order permanently
+        await playlistManager.reorderSentences(newOrder);
+
         // Update order in playlistManager.currentSentences
         const reorderedSentences = newOrder.map(id =>
             playlistManager.currentSentences.find(s => s.id === id)

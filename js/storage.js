@@ -139,6 +139,11 @@ class StorageManager {
 
     // Sentence Operations
     async createSentence(sentence) {
+        // Ensure successCount is initialized
+        if (sentence.successCount === undefined) {
+            sentence.successCount = 0;
+        }
+
         return new Promise((resolve, reject) => {
             const transaction = this.db.transaction(['sentences'], 'readwrite');
             const store = transaction.objectStore('sentences');
@@ -367,6 +372,7 @@ class StorageManager {
                 nativeLang: sentence.nativeLang || data.playlist.nativeLang,
                 customAudio,
                 disabled: sentence.disabled || false,
+                successCount: sentence.successCount || 0,
                 order: sentence.order !== undefined ? sentence.order : index
             });
         });
@@ -389,7 +395,7 @@ class StorageManager {
         return fetch(base64).then(res => res.blob());
     }
 
-    // Migration: Ensure all playlists have settings, cloudId, and version
+    // Migration: Ensure all playlists have settings, cloudId, and version and sentences have successCount
     async migratePlaylistSettings() {
         const playlists = await this.getAllPlaylists();
         const defaultSettings = {
@@ -412,6 +418,14 @@ class StorageManager {
             
             if (Object.keys(updates).length > 0) {
                 await this.updatePlaylist(playlist.id, updates);
+            }
+
+            // Migrate sentences inside this playlist
+            const sentences = await this.getSentencesByPlaylist(playlist.id);
+            for (const sentence of sentences) {
+                if (sentence.successCount === undefined) {
+                    await this.updateSentence(sentence.id, { successCount: 0 });
+                }
             }
         }
     }

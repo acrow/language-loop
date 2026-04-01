@@ -62,11 +62,34 @@ class TestManager {
             this.correctCount++;
         }
 
+        const similarity = this.calculateSimilarity(normalizedUser, normalizedCorrect);
+
+        // Auto-reorder on perfect match
+        if (isCorrect && similarity === 100) {
+            currentSentence.successCount = (currentSentence.successCount || 0) + 1;
+            await storage.updateSentence(currentSentence.id, { successCount: currentSentence.successCount });
+
+            // Fetch all sentences to determine their current logical order
+            const allSentences = await storage.getSentencesByPlaylist(this.currentPlaylistId);
+            
+            // Sort by successCount ascending, then original manual order ascending
+            allSentences.sort((a, b) => {
+                const sa = a.successCount || 0;
+                const sb = b.successCount || 0;
+                if (sa !== sb) return sa - sb;
+                return a.order - b.order;
+            });
+
+            // Extract the new IDs and permanently save this new arrangement to the DB
+            const newOrderIds = allSentences.map(s => s.id);
+            await playlistManager.reorderSentences(newOrderIds);
+        }
+
         return {
             isCorrect,
             userAnswer,
             correctAnswer,
-            similarity: this.calculateSimilarity(normalizedUser, normalizedCorrect)
+            similarity
         };
     }
 
