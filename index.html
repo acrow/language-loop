@@ -141,8 +141,11 @@
             <div class="sentences-list">
                 <div class="list-header">
                     <h3 data-i18n="sentence.sentences">Sentences</h3>
-                    <button id="add-sentence-btn" class="btn btn-small">+ <span
-                            data-i18n="common.add">Add</span></button>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <button id="toggle-all-sentences-btn" class="btn btn-small btn-secondary" title="Enable/Disable All">Toggle All</button>
+                        <button id="add-sentence-btn" class="btn btn-small">+ <span
+                                data-i18n="common.add">Add</span></button>
+                    </div>
                 </div>
                 <div id="sentences-container">
                     <!-- Sentences will be rendered here -->

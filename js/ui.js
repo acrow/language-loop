@@ -91,6 +91,10 @@ class UIManager {
             this.showSentenceEditor();
         });
 
+        document.getElementById('toggle-all-sentences-btn')?.addEventListener('click', () => {
+            this.toggleAllSentences();
+        });
+
         document.getElementById('player-menu-btn')?.addEventListener('click', () => {
             this.showPlaylistMenu();
         });
@@ -744,6 +748,35 @@ class UIManager {
         });
 
         return item;
+    }
+
+    async toggleAllSentences() {
+        if (!playlistManager.currentSentences || playlistManager.currentSentences.length === 0) return;
+
+        const allDisabled = playlistManager.currentSentences.every(s => s.disabled);
+        const targetState = !allDisabled; // If all disabled, enable all. Else, disable all.
+
+        const btn = document.getElementById('toggle-all-sentences-btn');
+        const originalText = btn.textContent;
+        btn.textContent = '⏳';
+        btn.disabled = true;
+
+        try {
+            for (const sentence of playlistManager.currentSentences) {
+                if (sentence.disabled !== targetState) {
+                    sentence.disabled = targetState;
+                    await storage.updateSentence(sentence.id, { disabled: targetState });
+                }
+            }
+            await this.renderSentences(playlistManager.currentSentences);
+            this.showToast(targetState ? 'All sentences disabled' : 'All sentences enabled');
+        } catch (error) {
+            console.error('Failed to toggle all sentences:', error);
+            await dialog.alert('Failed to toggle sentences', 'Error');
+        } finally {
+            btn.textContent = originalText;
+            btn.disabled = false;
+        }
     }
 
     updateCurrentSentence(index) {

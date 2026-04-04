@@ -17,8 +17,9 @@ class TestManager {
         this.correctCount = 0;
         this.attemptedCount = 0;
 
-        // Load sentences
-        this.sentences = await storage.getSentencesByPlaylist(playlistId);
+        // Load sentences, filtering out disabled ones
+        const allSentences = await storage.getSentencesByPlaylist(playlistId);
+        this.sentences = allSentences.filter(s => !s.disabled);
 
         if (this.sentences.length === 0) {
             await dialog.alert('No sentences in this playlist to test!', 'Notice');
