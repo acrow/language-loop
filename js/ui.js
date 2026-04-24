@@ -2088,6 +2088,7 @@ UIManager.prototype._renderLocalForUpload = async function () {
 
     container.innerHTML = '<div style="color: var(--text-secondary); font-size:0.85rem;">Loading...</div>';
     const playlists = await playlistManager.getAllPlaylists();
+    playlists.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 
     if (playlists.length === 0) {
         container.innerHTML = '<div style="color: var(--text-secondary); font-size:0.85rem;">No local playlists.</div>';
