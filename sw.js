@@ -1,14 +1,14 @@
 const CACHE_NAME = 'language-loop-v2';
 const urlsToCache = [
-    '/',
-    '/index.html',
-    '/css/styles.css',
-    '/js/app.js',
-    '/js/storage.js',
-    '/js/audio.js',
-    '/js/playlist.js',
-    '/js/ui.js',
-    '/manifest.json'
+    './',
+    './index.html',
+    './css/styles.css',
+    './js/app.js',
+    './js/storage.js',
+    './js/audio.js',
+    './js/playlist.js',
+    './js/ui.js',
+    './manifest.json'
 ];
 
 // Install event - cache resources
@@ -65,7 +65,7 @@ self.addEventListener('fetch', (event) => {
             .catch(() => {
                 // Network failed, try cache
                 return caches.match(event.request).then((response) => {
-                    return response || caches.match('/index.html');
+                    return response || caches.match('./index.html');
                 });
             })
     );

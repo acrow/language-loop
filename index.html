@@ -11,7 +11,7 @@
 
     <title>Language Loop</title>
 
-    <link rel="icon" type="image/png" href="assets/icons/logo.png">
+    <link rel="icon" type="image/png" href="assets/icons/logo.gif">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="css/styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,7 +28,8 @@
             </div>
             <div class="welcome-container">
                 <div class="welcome-icon">
-                    <img src="assets/icons/logo.png" alt="Language Loop Logo" style="width: 120px; height: 120px; border-radius: 20px; box-shadow: var(--shadow-lg);">
+                    <img src="assets/icons/icon-192.png" alt="Language Loop Logo"
+                        style="width: 120px; height: 120px; border-radius: 20px; box-shadow: var(--shadow-lg);">
                 </div>
                 <h1 id="welcome-title" class="welcome-title" data-i18n="welcome.welcome"></h1>
                 <h1>Language Loop</h1>
@@ -145,7 +146,8 @@
                 <div class="list-header">
                     <h3 data-i18n="sentence.sentences">Sentences</h3>
                     <div style="display: flex; gap: 0.5rem; align-items: center;">
-                        <button id="toggle-all-sentences-btn" class="btn btn-small btn-secondary" title="Enable/Disable All">Toggle All</button>
+                        <button id="toggle-all-sentences-btn" class="btn btn-small btn-secondary"
+                            title="Enable/Disable All">Toggle All</button>
                         <button id="add-sentence-btn" class="btn btn-small">+ <span
                                 data-i18n="common.add">Add</span></button>
                     </div>
@@ -703,10 +705,12 @@
                 <!-- Auth State -->
                 <div id="cloud-auth-section" style="padding: 1rem; border-bottom: 1px solid var(--border-color);">
                     <div id="cloud-signed-out">
-                        <p style="margin-bottom: 0.75rem; color: var(--text-secondary);">Sign in with your Google account to upload and download playlists across devices.</p>
+                        <p style="margin-bottom: 0.75rem; color: var(--text-secondary);">Sign in with your Google
+                            account to upload and download playlists across devices.</p>
                         <button id="cloud-signin-btn" class="btn btn-primary">🔑 Sign in with Google</button>
                     </div>
-                    <div id="cloud-signed-in" class="hidden" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                    <div id="cloud-signed-in" class="hidden"
+                        style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
                         <span id="cloud-user-info" style="color: var(--text-secondary); font-size: 0.9rem;"></span>
                         <button id="cloud-signout-btn" class="btn btn-secondary btn-small">Sign Out</button>
                     </div>
@@ -715,24 +719,28 @@
                 <!-- Sync Panels (shown when signed in) -->
                 <div id="cloud-panels" class="hidden">
                     <div class="cloud-tabs">
-                        <button type="button" id="cloud-tab-local" class="cloud-tab active" data-target="cloud-panel-local">📱 On This Device</button>
-                        <button type="button" id="cloud-tab-remote" class="cloud-tab" data-target="cloud-panel-remote">☁️ In the Cloud</button>
+                        <button type="button" id="cloud-tab-local" class="cloud-tab active"
+                            data-target="cloud-panel-local">📱 On This Device</button>
+                        <button type="button" id="cloud-tab-remote" class="cloud-tab"
+                            data-target="cloud-panel-remote">☁️ In the Cloud</button>
                     </div>
-                    
+
                     <!-- Local Playlists -->
                     <div id="cloud-panel-local" class="cloud-panel active">
                         <div id="cloud-local-list"></div>
                     </div>
-                    
+
                     <!-- Cloud Playlists -->
                     <div id="cloud-panel-remote" class="cloud-panel hidden">
                         <div style="display: flex; justify-content: flex-end; margin-bottom: 0.75rem;">
-                            <button id="cloud-refresh-btn" class="btn btn-small btn-secondary" title="Refresh cloud list">🔄 Refresh Cloud List</button>
+                            <button id="cloud-refresh-btn" class="btn btn-small btn-secondary"
+                                title="Refresh cloud list">🔄 Refresh Cloud List</button>
                         </div>
                         <div id="cloud-remote-list"></div>
                     </div>
-                    
-                    <div style="padding: 0.6rem 1rem; font-size: 0.78rem; color: var(--text-secondary); border-top: 1px solid var(--border-color);">
+
+                    <div
+                        style="padding: 0.6rem 1rem; font-size: 0.78rem; color: var(--text-secondary); border-top: 1px solid var(--border-color);">
                         ⚠️ Custom voice recordings are not uploaded (text only).
                     </div>
                 </div>
