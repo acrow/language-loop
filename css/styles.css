@@ -385,11 +385,171 @@ body {
 
 /* Playlists Grid */
 .playlists-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    display: flex;
+    flex-direction: column;
     gap: var(--spacing-md);
     padding: var(--spacing-md);
 }
+
+/* Group Card */
+.group-card {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-left: 4px solid var(--accent-primary);
+    overflow: hidden;
+    transition: all var(--transition-normal);
+    position: relative;
+}
+
+.group-card.drag-over-group {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 2px var(--accent-primary), var(--shadow-glow);
+    background: rgba(108, 92, 231, 0.07);
+}
+
+.group-card.dragging {
+    opacity: 0.4;
+    cursor: grabbing;
+}
+
+.group-header {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-md);
+    cursor: pointer;
+    gap: var(--spacing-sm);
+    user-select: none;
+}
+
+.group-header:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.group-drag-handle {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    cursor: grab;
+    user-select: none;
+    padding: 0.25rem 0.25rem 0.25rem 0;
+    flex-shrink: 0;
+    opacity: 0.5;
+    transition: opacity var(--transition-fast);
+}
+
+.group-card:hover .group-drag-handle {
+    opacity: 1;
+}
+
+.group-icon {
+    font-size: 1.75rem;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.group-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.group-name {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.group-count {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.15rem;
+}
+
+.group-actions {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.group-collapse-btn,
+.group-delete-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+}
+
+.group-collapse-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--text-primary);
+}
+
+.group-delete-btn:hover {
+    background: rgba(255, 107, 157, 0.15);
+    color: var(--danger);
+}
+
+.group-chevron {
+    display: inline-block;
+    transition: transform var(--transition-fast);
+    font-style: normal;
+}
+
+.group-card.collapsed .group-chevron {
+    transform: rotate(-90deg);
+}
+
+.group-playlists {
+    padding: 0 var(--spacing-md) var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    overflow: hidden;
+    transition: all var(--transition-normal);
+}
+
+.group-card.collapsed .group-playlists {
+    display: none;
+}
+
+.group-empty-hint {
+    text-align: center;
+    padding: var(--spacing-md);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    border: 2px dashed rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-md);
+    pointer-events: none;
+}
+
+/* Playlist card inside a group — slightly indented and no top bar */
+.group-playlists .playlist-card {
+    margin: 0;
+}
+
+/* Drop zone for ungrouped area */
+.ungrouped-drop-zone {
+    min-height: 8px;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+}
+
+.ungrouped-drop-zone.drag-over {
+    min-height: 56px;
+    border: 2px dashed var(--accent-primary);
+    background: rgba(108, 92, 231, 0.07);
+}
+
+
 
 .playlist-card {
     background: var(--bg-secondary);
@@ -908,9 +1068,7 @@ form {
         font-size: 2rem;
     }
 
-    .playlists-grid {
-        grid-template-columns: 1fr;
-    }
+
 
     .form-row {
         grid-template-columns: 1fr;
@@ -1084,7 +1242,8 @@ form {
 }
 
 .icon-option,
-.icon-option-create {
+.icon-option-create,
+.icon-option-group {
     width: 100%;
     aspect-ratio: 1;
     font-size: 2rem;
@@ -1099,14 +1258,16 @@ form {
 }
 
 .icon-option:hover,
-.icon-option-create:hover {
+.icon-option-create:hover,
+.icon-option-group:hover {
     background: rgba(108, 92, 231, 0.2);
     border-color: var(--accent);
     transform: scale(1.1);
 }
 
 .icon-option.selected,
-.icon-option-create.selected {
+.icon-option-create.selected,
+.icon-option-group.selected {
     background: rgba(108, 92, 231, 0.5);
     border-color: var(--accent);
     border-width: 3px;

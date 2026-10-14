@@ -18,6 +18,27 @@ class PlaylistManager {
         return await storage.getAllPlaylists();
     }
 
+    // Group Methods
+    async createGroup(name, icon = '📁') {
+        return await storage.createGroup(name, icon);
+    }
+
+    async getAllGroups() {
+        return await storage.getAllGroups();
+    }
+
+    async updateGroup(id, updates) {
+        return await storage.updateGroup(id, updates);
+    }
+
+    async deleteGroup(id) {
+        return await storage.deleteGroup(id);
+    }
+
+    async movePlaylistToGroup(playlistId, groupId) {
+        await storage.updatePlaylist(playlistId, { groupId: groupId || null });
+    }
+
     async getPlaylist(id) {
         return await storage.getPlaylist(id);
     }

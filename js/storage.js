@@ -1,6 +1,6 @@
 // IndexedDB Storage Manager
 const DB_NAME = 'LanguageLoopDB';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 class StorageManager {
     constructor() {
@@ -42,6 +42,15 @@ class StorageManager {
                 if (!db.objectStoreNames.contains('settings')) {
                     db.createObjectStore('settings', { keyPath: 'key' });
                 }
+
+                // v2: Create groups store
+                if (!db.objectStoreNames.contains('groups')) {
+                    const groupStore = db.createObjectStore('groups', {
+                        keyPath: 'id',
+                        autoIncrement: true
+                    });
+                    groupStore.createIndex('order', 'order', { unique: false });
+                }
             };
         });
     }
@@ -51,7 +60,7 @@ class StorageManager {
     }
 
     // Playlist Operations
-    async createPlaylist(name, targetLang = 'en-US', nativeLang = 'zh-CN', icon = '📚', description = '') {
+    async createPlaylist(name, targetLang = 'en-US', nativeLang = 'zh-CN', icon = '📚', description = '', groupId = null) {
         const playlist = {
             cloudId: this.generateId(),
             version: 1,
@@ -60,6 +69,7 @@ class StorageManager {
             description,
             targetLang,
             nativeLang,
+            groupId: groupId || null,
             createdAt: Date.now(),
             lastPlayedAt: null,
             settings: {
@@ -272,6 +282,83 @@ class StorageManager {
 
     async getPlaylistOrder() {
         return this.getSetting('playlistOrder', null);
+    }
+
+    async saveGroupOrder(orderedGroupIds) {
+        return this.setSetting('groupOrder', orderedGroupIds);
+    }
+
+    async getGroupOrder() {
+        return this.getSetting('groupOrder', null);
+    }
+
+    // Group Operations
+    async createGroup(name, icon = '📁', color = null) {
+        const allGroups = await this.getAllGroups();
+        const group = {
+            name,
+            icon,
+            color,
+            order: allGroups.length,
+            collapsed: false,
+            createdAt: Date.now()
+        };
+
+        return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction(['groups'], 'readwrite');
+            const store = transaction.objectStore('groups');
+            const request = store.add(group);
+
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+    async getAllGroups() {
+        return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction(['groups'], 'readonly');
+            const store = transaction.objectStore('groups');
+            const request = store.getAll();
+
+            request.onsuccess = () => resolve(request.result || []);
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+    async getGroup(id) {
+        return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction(['groups'], 'readonly');
+            const store = transaction.objectStore('groups');
+            const request = store.get(id);
+
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+    async updateGroup(id, updates) {
+        const group = await this.getGroup(id);
+        const updatedGroup = { ...group, ...updates };
+
+        return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction(['groups'], 'readwrite');
+            const store = transaction.objectStore('groups');
+            const request = store.put(updatedGroup);
+
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+    async deleteGroup(id) {
+        return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction(['groups'], 'readwrite');
+            const store = transaction.objectStore('groups');
+            const request = store.delete(id);
+
+            request.onsuccess = () => resolve();
+            request.onerror = () => reject(request.error);
+        });
     }
 
 

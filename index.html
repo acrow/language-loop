@@ -615,6 +615,7 @@
             <div class="modal-content modal-menu">
                 <button id="add-playlist-btn" class="menu-item">➕ <span
                         data-i18n="playlist.createPlaylist"></span></button>
+                <button id="add-group-btn" class="menu-item">📁 Create Group</button>
                 <button id="import-playlist-btn" class="menu-item">📥 <span
                         data-i18n="playlist.importPlaylistMenu"></span></button>
                 <button id="import-text-btn" class="menu-item">📄 <span
@@ -643,6 +644,44 @@
                 <button id="delete-playlist-btn" class="menu-item danger">🗑️ <span
                         data-i18n="playlist.deletePlaylistMenu"></span></button>
                 <button id="close-menu-btn" class="menu-item">✖️ <span data-i18n="playlist.closeMenu"></span></button>
+            </div>
+        </div>
+
+        <!-- Create Group Modal -->
+        <div id="create-group-modal" class="modal hidden">
+            <div class="modal-content" style="max-width: 420px;">
+                <div class="modal-header">
+                    <h2>📁 Create Group</h2>
+                    <button id="close-create-group-btn" class="btn btn-icon">×</button>
+                </div>
+                <form id="group-create-form">
+                    <div class="form-group">
+                        <label for="group-name-input">Group Name</label>
+                        <input type="text" id="group-name-input" required placeholder="e.g., Beginner, Work, Travel">
+                    </div>
+                    <div class="form-group">
+                        <label>Choose Icon</label>
+                        <div class="icon-picker">
+                            <button type="button" class="icon-option-group" data-icon="📁">📁</button>
+                            <button type="button" class="icon-option-group" data-icon="📂">📂</button>
+                            <button type="button" class="icon-option-group" data-icon="🗂️">🗂️</button>
+                            <button type="button" class="icon-option-group" data-icon="📚">📚</button>
+                            <button type="button" class="icon-option-group" data-icon="🎯">🎯</button>
+                            <button type="button" class="icon-option-group" data-icon="⭐">⭐</button>
+                            <button type="button" class="icon-option-group" data-icon="🔥">🔥</button>
+                            <button type="button" class="icon-option-group" data-icon="💼">💼</button>
+                            <button type="button" class="icon-option-group" data-icon="🏠">🏠</button>
+                            <button type="button" class="icon-option-group" data-icon="✈️">✈️</button>
+                            <button type="button" class="icon-option-group" data-icon="🎓">🎓</button>
+                            <button type="button" class="icon-option-group" data-icon="💬">💬</button>
+                        </div>
+                        <input type="hidden" id="group-icon" value="📁">
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" id="cancel-create-group-btn" class="btn btn-secondary">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Create Group</button>
+                    </div>
+                </form>
             </div>
         </div>
 

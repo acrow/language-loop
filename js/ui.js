@@ -413,6 +413,34 @@ class UIManager {
             this.refreshCloudList();
         });
 
+        // Group modal
+        document.getElementById('add-group-btn')?.addEventListener('click', () => {
+            this.hideModal('library-menu-modal');
+            this.showCreateGroupModal();
+        });
+
+        document.getElementById('close-create-group-btn')?.addEventListener('click', () => {
+            this.hideModal('create-group-modal');
+        });
+
+        document.getElementById('cancel-create-group-btn')?.addEventListener('click', () => {
+            this.hideModal('create-group-modal');
+        });
+
+        document.getElementById('group-create-form')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.createGroup();
+        });
+
+        // Icon picker for group form
+        document.querySelectorAll('.icon-option-group').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.icon-option-group').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                document.getElementById('group-icon').value = btn.dataset.icon;
+            });
+        });
+
         // Cloud Sync Tabs
         document.querySelectorAll('.cloud-tab').forEach(tab => {
             tab.addEventListener('click', (e) => {
@@ -496,11 +524,15 @@ class UIManager {
 
     // Playlist Rendering
     async renderPlaylists() {
-        const playlists = await playlistManager.getAllPlaylists();
+        const [playlists, groups] = await Promise.all([
+            playlistManager.getAllPlaylists(),
+            playlistManager.getAllGroups()
+        ]);
         const container = document.getElementById('playlists-container');
         const emptyState = document.getElementById('empty-library');
 
-        if (playlists.length === 0) {
+        const totalItems = playlists.length + groups.length;
+        if (totalItems === 0) {
             container.innerHTML = '';
             emptyState.classList.remove('hidden');
             return;
@@ -509,55 +541,265 @@ class UIManager {
         emptyState.classList.add('hidden');
         container.innerHTML = '';
 
-        // Apply saved order; unknown/new playlists go to the front by createdAt
-        const savedOrder = await storage.getPlaylistOrder();
-        if (savedOrder && savedOrder.length > 0) {
-            const orderMap = new Map(savedOrder.map((id, idx) => [id, idx]));
-            playlists.sort((a, b) => {
-                const ia = orderMap.has(a.id) ? orderMap.get(a.id) : -a.createdAt;
-                const ib = orderMap.has(b.id) ? orderMap.get(b.id) : -b.createdAt;
-                return ia - ib;
-            });
+        // -------------------------------------------------------
+        // Build a combined ordered list of groups + loose playlists
+        // -------------------------------------------------------
+        // Load persisted combined order (array of {type, id} objects)
+        const savedCombined = await storage.getSetting('combinedOrder', null);
+
+        // Map for quick lookup
+        const groupMap = new Map(groups.map(g => [g.id, g]));
+        const playlistMap = new Map(playlists.map(p => [p.id, p]));
+
+        // Split playlists into grouped and ungrouped
+        const groupedIds = new Set(playlists.filter(p => p.groupId).map(p => p.id));
+
+        // Build display order
+        let combinedItems = []; // Each item: { type: 'group'|'playlist', id }
+
+        if (savedCombined && savedCombined.length > 0) {
+            // Restore from saved order, add any new items at end
+            const seenGroups = new Set();
+            const seenPlaylists = new Set();
+            for (const entry of savedCombined) {
+                if (entry.type === 'group' && groupMap.has(entry.id)) {
+                    combinedItems.push(entry);
+                    seenGroups.add(entry.id);
+                } else if (entry.type === 'playlist' && playlistMap.has(entry.id) && !groupedIds.has(entry.id)) {
+                    combinedItems.push(entry);
+                    seenPlaylists.add(entry.id);
+                }
+            }
+            // Append new groups not in saved order
+            for (const g of groups) {
+                if (!seenGroups.has(g.id)) combinedItems.push({ type: 'group', id: g.id });
+            }
+            // Append new ungrouped playlists not in saved order
+            for (const p of playlists) {
+                if (!seenPlaylists.has(p.id) && !groupedIds.has(p.id)) {
+                    combinedItems.push({ type: 'playlist', id: p.id });
+                }
+            }
         } else {
-            // Default: newest first
-            playlists.sort((a, b) => b.createdAt - a.createdAt);
+            // Default: groups first (by createdAt), then ungrouped playlists (newest first)
+            groups.sort((a, b) => a.createdAt - b.createdAt)
+                  .forEach(g => combinedItems.push({ type: 'group', id: g.id }));
+            playlists.filter(p => !p.groupId)
+                     .sort((a, b) => b.createdAt - a.createdAt)
+                     .forEach(p => combinedItems.push({ type: 'playlist', id: p.id }));
         }
 
-        for (const playlist of playlists) {
-            const count = await playlistManager.getSentenceCount(playlist.id);
-            const card = this.createPlaylistCard(playlist, count);
-            container.appendChild(card);
+        // Render combined list
+        for (const entry of combinedItems) {
+            if (entry.type === 'group') {
+                const group = groupMap.get(entry.id);
+                if (!group) continue;
+                const groupPlaylists = playlists.filter(p => p.groupId === group.id);
+                // Sort playlists within group by their savedOrder within the group
+                const savedGroupPlaylistOrder = await storage.getSetting(`groupPlaylistOrder_${group.id}`, null);
+                if (savedGroupPlaylistOrder) {
+                    const orderMap = new Map(savedGroupPlaylistOrder.map((id, i) => [id, i]));
+                    groupPlaylists.sort((a, b) => {
+                        const ia = orderMap.has(a.id) ? orderMap.get(a.id) : 9999;
+                        const ib = orderMap.has(b.id) ? orderMap.get(b.id) : 9999;
+                        return ia - ib;
+                    });
+                }
+                const groupEl = await this.createGroupCard(group, groupPlaylists);
+                container.appendChild(groupEl);
+            } else {
+                const playlist = playlistMap.get(entry.id);
+                if (!playlist || playlist.groupId) continue;
+                const count = await playlistManager.getSentenceCount(playlist.id);
+                const card = this.createPlaylistCard(playlist, count);
+                container.appendChild(card);
+            }
         }
 
-        // Attach drag-and-drop to the container
-        this._setupPlaylistDragDrop(container);
+        // Attach combined drag-and-drop
+        this._setupLibraryDragDrop(container);
     }
 
-    _setupPlaylistDragDrop(container) {
-        let dragSrc = null;
+    // -----------------------------------------------
+    // Group Card
+    // -----------------------------------------------
+    async createGroupCard(group, groupPlaylists) {
+        const el = document.createElement('div');
+        el.className = 'group-card' + (group.collapsed ? ' collapsed' : '');
+        el.dataset.groupId = group.id;
+        el.draggable = true;
 
+        const count = groupPlaylists.length;
+
+        el.innerHTML = `
+            <div class="group-header">
+                <span class="group-drag-handle" title="Drag to reorder">⋮⋮</span>
+                <span class="group-icon">${this.escapeHtml(group.icon || '📁')}</span>
+                <div class="group-info">
+                    <div class="group-name">${this.escapeHtml(group.name)}</div>
+                    <div class="group-count">${count} playlist${count !== 1 ? 's' : ''}</div>
+                </div>
+                <div class="group-actions">
+                    <button class="group-collapse-btn" title="${group.collapsed ? 'Expand' : 'Collapse'}">
+                        <i class="group-chevron">▾</i>
+                    </button>
+                    <button class="group-delete-btn" title="Delete group">🗑</button>
+                </div>
+            </div>
+            <div class="group-playlists"></div>
+        `;
+
+        // Populate inner playlist cards
+        const innerList = el.querySelector('.group-playlists');
+        if (groupPlaylists.length === 0) {
+            innerList.innerHTML = '<div class="group-empty-hint">Drop playlists here</div>';
+        } else {
+            for (const playlist of groupPlaylists) {
+                const cnt = await playlistManager.getSentenceCount(playlist.id);
+                const card = this.createPlaylistCard(playlist, cnt);
+                innerList.appendChild(card);
+            }
+        }
+
+        // Collapse toggle
+        el.querySelector('.group-collapse-btn').addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const nowCollapsed = !el.classList.contains('collapsed');
+            el.classList.toggle('collapsed', nowCollapsed);
+            el.querySelector('.group-collapse-btn').title = nowCollapsed ? 'Expand' : 'Collapse';
+            await playlistManager.updateGroup(group.id, { collapsed: nowCollapsed });
+        });
+
+        // Delete group (only if empty)
+        el.querySelector('.group-delete-btn').addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const currentPlaylists = await playlistManager.getAllPlaylists();
+            const inGroup = currentPlaylists.filter(p => p.groupId === group.id);
+            if (inGroup.length > 0) {
+                await dialog.alert(`Cannot delete "${group.name}" — it still has ${inGroup.length} playlist(s) inside. Move them out first.`, 'Group Not Empty');
+                return;
+            }
+            if (await dialog.confirm(`Delete group "${group.name}"?`, 'Confirm Delete')) {
+                await playlistManager.deleteGroup(group.id);
+                // Remove from combinedOrder
+                const saved = await storage.getSetting('combinedOrder', null) || [];
+                const updated = saved.filter(e => !(e.type === 'group' && e.id === group.id));
+                await storage.setSetting('combinedOrder', updated);
+                await this.renderPlaylists();
+                this.showToast(`Group "${group.name}" deleted`);
+            }
+        });
+
+        return el;
+    }
+
+    // -----------------------------------------------
+    // Unified Library Drag & Drop
+    // -----------------------------------------------
+    _setupLibraryDragDrop(container) {
+        // State
+        let dragSrcCard = null;   // a .playlist-card being dragged
+        let dragSrcGroup = null;  // a .group-card being dragged
+
+        const clearHighlights = () => {
+            container.querySelectorAll('.drag-over, .drag-over-group').forEach(el => {
+                el.classList.remove('drag-over', 'drag-over-group');
+            });
+        };
+
+        // ---- Playlist card drag ----
         container.querySelectorAll('.playlist-card').forEach(card => {
             card.addEventListener('dragstart', (e) => {
-                dragSrc = card;
+                dragSrcCard = card;
+                dragSrcGroup = null;
                 e.dataTransfer.effectAllowed = 'move';
                 e.dataTransfer.setData('text/plain', card.dataset.playlistId);
-                // Defer class to allow browser to capture drag image
                 setTimeout(() => card.classList.add('dragging'), 0);
+                e.stopPropagation();
             });
 
             card.addEventListener('dragend', () => {
                 card.classList.remove('dragging');
-                container.querySelectorAll('.playlist-card').forEach(c => c.classList.remove('drag-over'));
-                dragSrc = null;
+                clearHighlights();
+                dragSrcCard = null;
+            });
+        });
+
+        // ---- Group card drag (reorder groups) ----
+        container.querySelectorAll('.group-card').forEach(groupEl => {
+            const handle = groupEl.querySelector('.group-drag-handle');
+
+            groupEl.addEventListener('dragstart', (e) => {
+                // Only start group drag if the handle is involved or playlist card didn't initiate
+                if (dragSrcCard) return;
+                dragSrcGroup = groupEl;
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', 'group-' + groupEl.dataset.groupId);
+                setTimeout(() => groupEl.classList.add('dragging'), 0);
             });
 
+            groupEl.addEventListener('dragend', () => {
+                groupEl.classList.remove('dragging');
+                clearHighlights();
+                dragSrcGroup = null;
+            });
+
+            // Playlist dropped onto group → move into group
+            groupEl.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                clearHighlights();
+                if (dragSrcCard) {
+                    // Highlight the group as drop target
+                    groupEl.classList.add('drag-over-group');
+                } else if (dragSrcGroup && dragSrcGroup !== groupEl) {
+                    groupEl.classList.add('drag-over-group');
+                }
+            });
+
+            groupEl.addEventListener('dragleave', (e) => {
+                // Only clear if leaving the group card entirely
+                if (!groupEl.contains(e.relatedTarget)) {
+                    groupEl.classList.remove('drag-over-group');
+                }
+            });
+
+            groupEl.addEventListener('drop', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                clearHighlights();
+
+                if (dragSrcCard) {
+                    // Move playlist into this group
+                    const playlistId = parseInt(dragSrcCard.dataset.playlistId);
+                    const groupId = parseInt(groupEl.dataset.groupId);
+                    await playlistManager.movePlaylistToGroup(playlistId, groupId);
+                    await this._saveCombinedOrder(container);
+                    await this.renderPlaylists();
+                    this.showToast('Playlist moved into group');
+                } else if (dragSrcGroup && dragSrcGroup !== groupEl) {
+                    // Reorder groups by inserting before the hovered group
+                    const topItems = [...container.children];
+                    const srcIdx = topItems.indexOf(dragSrcGroup);
+                    const dstIdx = topItems.indexOf(groupEl);
+                    if (srcIdx < dstIdx) {
+                        container.insertBefore(dragSrcGroup, groupEl.nextSibling);
+                    } else {
+                        container.insertBefore(dragSrcGroup, groupEl);
+                    }
+                    await this._saveCombinedOrder(container);
+                }
+            });
+        });
+
+        // ---- Playlist dropped onto another playlist card (reorder) ----
+        container.querySelectorAll('.playlist-card').forEach(card => {
             card.addEventListener('dragover', (e) => {
                 e.preventDefault();
-                e.dataTransfer.dropEffect = 'move';
-                if (card !== dragSrc) {
-                    container.querySelectorAll('.playlist-card').forEach(c => c.classList.remove('drag-over'));
-                    card.classList.add('drag-over');
-                }
+                e.stopPropagation();
+                if (!dragSrcCard || dragSrcCard === card) return;
+                clearHighlights();
+                card.classList.add('drag-over');
             });
 
             card.addEventListener('dragleave', () => {
@@ -566,26 +808,82 @@ class UIManager {
 
             card.addEventListener('drop', async (e) => {
                 e.preventDefault();
-                card.classList.remove('drag-over');
-                if (!dragSrc || dragSrc === card) return;
+                e.stopPropagation();
+                clearHighlights();
+                if (!dragSrcCard || dragSrcCard === card) return;
 
-                // Reorder DOM
-                const cards = [...container.querySelectorAll('.playlist-card')];
-                const srcIdx = cards.indexOf(dragSrc);
-                const dstIdx = cards.indexOf(card);
+                const srcInGroup = dragSrcCard.closest('.group-card');
+                const dstInGroup = card.closest('.group-card');
 
-                if (srcIdx < dstIdx) {
-                    container.insertBefore(dragSrc, card.nextSibling);
-                } else {
-                    container.insertBefore(dragSrc, card);
+                if (srcInGroup && dstInGroup && srcInGroup === dstInGroup) {
+                    // Reorder within the same group
+                    const innerList = srcInGroup.querySelector('.group-playlists');
+                    const cards = [...innerList.querySelectorAll('.playlist-card')];
+                    const srcIdx = cards.indexOf(dragSrcCard);
+                    const dstIdx = cards.indexOf(card);
+                    if (srcIdx < dstIdx) {
+                        innerList.insertBefore(dragSrcCard, card.nextSibling);
+                    } else {
+                        innerList.insertBefore(dragSrcCard, card);
+                    }
+                    const newOrder = [...innerList.querySelectorAll('.playlist-card')].map(c => parseInt(c.dataset.playlistId));
+                    await storage.setSetting(`groupPlaylistOrder_${parseInt(srcInGroup.dataset.groupId)}`, newOrder);
+                } else if (!srcInGroup && !dstInGroup) {
+                    // Both ungrouped – reorder in top-level container
+                    const topItems = [...container.children];
+                    const srcIdx = topItems.indexOf(dragSrcCard);
+                    const dstIdx = topItems.indexOf(card);
+                    if (srcIdx < dstIdx) {
+                        container.insertBefore(dragSrcCard, card.nextSibling);
+                    } else {
+                        container.insertBefore(dragSrcCard, card);
+                    }
+                    await this._saveCombinedOrder(container);
+                } else if (srcInGroup && !dstInGroup) {
+                    // Move out of group, drop next to an ungrouped card
+                    const playlistId = parseInt(dragSrcCard.dataset.playlistId);
+                    await playlistManager.movePlaylistToGroup(playlistId, null);
+                    const dstIdx = [...container.children].indexOf(card);
+                    container.insertBefore(dragSrcCard, card);
+                    await this._saveCombinedOrder(container);
+                    await this.renderPlaylists();
+                    this.showToast('Playlist removed from group');
                 }
-
-                // Persist the new order
-                const newOrder = [...container.querySelectorAll('.playlist-card')]
-                    .map(c => parseInt(c.dataset.playlistId));
-                await storage.savePlaylistOrder(newOrder);
             });
         });
+
+        // ---- Top-level container drag-over (for ungrouped drop zone) ----
+        container.addEventListener('dragover', (e) => {
+            if (!dragSrcCard) return;
+            e.preventDefault();
+        });
+
+        container.addEventListener('drop', async (e) => {
+            if (!dragSrcCard) return;
+            // If dropped directly on container (not on card/group), move to ungrouped
+            if (e.target === container) {
+                const playlistId = parseInt(dragSrcCard.dataset.playlistId);
+                const srcInGroup = dragSrcCard.closest('.group-card');
+                if (srcInGroup) {
+                    await playlistManager.movePlaylistToGroup(playlistId, null);
+                    await this._saveCombinedOrder(container);
+                    await this.renderPlaylists();
+                    this.showToast('Playlist removed from group');
+                }
+            }
+        });
+    }
+
+    async _saveCombinedOrder(container) {
+        const items = [...container.children].map(el => {
+            if (el.classList.contains('group-card')) {
+                return { type: 'group', id: parseInt(el.dataset.groupId) };
+            } else if (el.classList.contains('playlist-card')) {
+                return { type: 'playlist', id: parseInt(el.dataset.playlistId) };
+            }
+            return null;
+        }).filter(Boolean);
+        await storage.setSetting('combinedOrder', items);
     }
 
     createPlaylistCard(playlist, sentenceCount) {
@@ -632,6 +930,37 @@ class UIManager {
         });
 
         return card;
+    }
+
+    // -----------------------------------------------
+    // Group Create/Delete
+    // -----------------------------------------------
+    showCreateGroupModal() {
+        document.getElementById('group-name-input').value = '';
+        document.getElementById('group-icon').value = '📁';
+        document.querySelectorAll('.icon-option-group').forEach(b => b.classList.remove('selected'));
+        const firstBtn = document.querySelector('.icon-option-group[data-icon="📁"]');
+        if (firstBtn) firstBtn.classList.add('selected');
+        this.showModal('create-group-modal');
+    }
+
+    async createGroup() {
+        const name = document.getElementById('group-name-input').value.trim();
+        const icon = document.getElementById('group-icon').value.trim() || '📁';
+
+        if (!name) {
+            await dialog.alert('Please enter a group name', 'Validation Error');
+            return;
+        }
+
+        try {
+            await playlistManager.createGroup(name, icon);
+            this.hideModal('create-group-modal');
+            await this.renderPlaylists();
+            this.showToast(`Group "${name}" created`);
+        } catch (error) {
+            await dialog.alert('Error creating group: ' + error.message, 'Error');
+        }
     }
 
     // Sentence Rendering
