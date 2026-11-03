@@ -3,7 +3,7 @@ import WelcomeView from '@/views/WelcomeView.vue';
 import { storage } from '@/services/storage';
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     { path: '/', redirect: '/library' },
     { path: '/welcome', name: 'welcome', component: WelcomeView },

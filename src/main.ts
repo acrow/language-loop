@@ -19,7 +19,8 @@ async function bootstrap(): Promise<void> {
   // load of the root URL when there is no data yet. Doing this once at startup
   // (instead of in a global navigation guard) keeps the welcome screen's
   // "Start" button working, since it can always navigate to the library.
-  const isRootEntry = window.location.pathname === '/';
+  const isRootEntry =
+    window.location.pathname === '/' || window.location.pathname === import.meta.env.BASE_URL;
   await router.isReady();
   if (isRootEntry) {
     try {
