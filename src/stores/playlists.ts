@@ -55,10 +55,18 @@ export const usePlaylistsStore = defineStore('playlists', () => {
     targetLang: string,
     nativeLang: string,
     icon = '📖',
-    description = ''
+    description = '',
+    groupId: number | null = null
   ): Promise<number> {
     if (!name || !name.trim()) throw new Error('Playlist name cannot be empty');
-    const id = await storage.createPlaylist(name.trim(), targetLang, nativeLang, icon, description);
+    const id = await storage.createPlaylist(
+      name.trim(),
+      targetLang,
+      nativeLang,
+      icon,
+      description,
+      groupId
+    );
     await loadPlaylists();
     return id;
   }

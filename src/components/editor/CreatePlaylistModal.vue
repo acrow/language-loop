@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import BaseModal from '@/components/ui/BaseModal.vue';
 import BaseInput from '@/components/ui/BaseInput.vue';
 import BaseSelect from '@/components/ui/BaseSelect.vue';
@@ -7,6 +8,7 @@ import BaseTextarea from '@/components/ui/BaseTextarea.vue';
 import BaseButton from '@/components/ui/BaseButton.vue';
 import IconPicker from '@/components/editor/IconPicker.vue';
 import { usePlaylistsStore } from '@/stores/playlists';
+import { useGroupsStore } from '@/stores/groups';
 import { useSettingsStore } from '@/stores/settings';
 import { useToast } from '@/composables/useToast';
 import { LANGUAGES } from '@/constants/languages';
@@ -15,17 +17,25 @@ const props = defineProps<{ open: boolean }>();
 const emit = defineEmits<{ (e: 'close'): void; (e: 'created', id: number): void }>();
 
 const playlists = usePlaylistsStore();
+const groups = useGroupsStore();
 const settings = useSettingsStore();
 const { showToast } = useToast();
+const { t } = useI18n();
 
 const name = ref('');
 const targetLang = ref('en-US');
 const nativeLang = ref('en-US');
 const icon = ref('📖');
 const description = ref('');
+const groupId = ref('');
 const saving = ref(false);
 
 const languageOptions = LANGUAGES.map((l) => ({ value: l.code, label: l.name }));
+
+const groupOptions = computed(() => [
+  { value: '', label: t('playlist.noGroup') },
+  ...groups.groups.map((g) => ({ value: String(g.id), label: `${g.icon} ${g.name}` }))
+]);
 
 watch(
   () => props.open,
@@ -36,6 +46,8 @@ watch(
       nativeLang.value = settings.interfaceLanguage || 'en-US';
       icon.value = '📖';
       description.value = '';
+      groupId.value = '';
+      void groups.loadGroups();
     }
   }
 );
@@ -53,7 +65,8 @@ async function create(): Promise<void> {
       targetLang.value,
       nativeLang.value,
       icon.value,
-      description.value
+      description.value,
+      groupId.value ? Number(groupId.value) : null
     );
     showToast('Playlist created');
     emit('created', id);
@@ -85,6 +98,7 @@ async function create(): Promise<void> {
         :label="$t('playlist.nativeLanguage')"
         :options="languageOptions"
       />
+      <BaseSelect v-model="groupId" :label="$t('playlist.group')" :options="groupOptions" />
       <div>
         <span class="label-text">{{ $t('playlist.icon') }}</span>
         <IconPicker v-model="icon" />

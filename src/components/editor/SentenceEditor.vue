@@ -27,7 +27,7 @@ const { isListening, isSupported, start: startSpeech, stop: stopSpeech } = useSp
 const targetText = ref('');
 const nativeText = ref('');
 const memo = ref('');
-const speechRate = ref(1.0);
+const keepOpen = ref(false);
 const saving = ref(false);
 const isRecording = ref(false);
 const recordedAudio = ref<Blob | null>(null);
@@ -44,7 +44,6 @@ watch(
       targetText.value = props.sentence?.targetText || '';
       nativeText.value = props.sentence?.nativeText || '';
       memo.value = props.sentence?.memo || '';
-      speechRate.value = props.sentence?.speechRate ?? 1.0;
       recordedAudio.value = props.sentence?.customAudio ?? null;
       isRecording.value = false;
     }
@@ -83,6 +82,8 @@ async function toggleVoiceInput(): Promise<void> {
   const lang = playlist.value?.targetLang || 'en-US';
   const ok = await startSpeech(lang, (text) => {
     targetText.value = text;
+    // Once voice input finishes, translate automatically.
+    void autoTranslate();
   });
   if (!ok) showToast('Speech recognition is not available', 'warning');
 }
@@ -119,7 +120,7 @@ async function save(): Promise<void> {
         targetText: targetText.value.trim(),
         nativeText: nativeText.value.trim(),
         memo: memo.value.trim(),
-        speechRate: speechRate.value,
+        speechRate: null,
         customAudio: recordedAudio.value
       });
     } else {
@@ -127,7 +128,6 @@ async function save(): Promise<void> {
         targetText: targetText.value.trim(),
         nativeText: nativeText.value.trim(),
         memo: memo.value.trim(),
-        speechRate: speechRate.value,
         customAudio: recordedAudio.value
       });
     }
@@ -135,7 +135,16 @@ async function save(): Promise<void> {
     audioEngine.loadPlaylist(playlists.currentSentences);
     showToast('Sentence saved');
     emit('saved');
-    emit('close');
+
+    if (keepOpen.value && !props.sentence) {
+      // Keep the dialog open and clear the form for the next sentence.
+      targetText.value = '';
+      nativeText.value = '';
+      memo.value = '';
+      recordedAudio.value = null;
+    } else {
+      emit('close');
+    }
   } catch (error) {
     console.error(error);
     showToast('Failed to save sentence', 'error');
@@ -193,18 +202,6 @@ async function save(): Promise<void> {
         placeholder="Notes, grammar tips, context..."
       />
 
-      <label class="form-control">
-        <span class="label-text">Playback Speed: {{ speechRate.toFixed(1) }}x</span>
-        <input
-          v-model.number="speechRate"
-          type="range"
-          min="0.5"
-          max="2"
-          step="0.1"
-          class="range range-primary"
-        />
-      </label>
-
       <div>
         <span class="label-text">{{ $t('sentence.customAudio') }}</span>
         <div class="mt-2 flex flex-wrap items-center gap-2">
@@ -225,6 +222,11 @@ async function save(): Promise<void> {
           </BaseButton>
         </div>
       </div>
+
+      <label v-if="!sentence" class="label cursor-pointer justify-start gap-3">
+        <input v-model="keepOpen" type="checkbox" class="checkbox checkbox-primary" />
+        <span class="label-text">{{ $t('sentence.addAnother') }}</span>
+      </label>
     </div>
 
     <template #footer>
