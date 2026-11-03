@@ -611,7 +611,7 @@ export class AudioEngine {
   // ---------------------------------------------------------------
   private setupWakeLockHandlers(): void {
     document.addEventListener('visibilitychange', async () => {
-      if (this.wakeLock !== null && document.visibilityState === 'visible') {
+      if (document.visibilityState === 'visible' && this.isPlaying) {
         await this.requestWakeLock();
       }
     });
@@ -619,6 +619,7 @@ export class AudioEngine {
 
   async requestWakeLock(): Promise<void> {
     if (!this.supportsWakeLock || !this.isPlaying) return;
+    if (this.wakeLock !== null) return;
 
     const nav = navigator as Navigator & {
       wakeLock?: { request: (type: 'screen') => Promise<WakeLockSentinel> };
@@ -628,7 +629,12 @@ export class AudioEngine {
     try {
       this.wakeLock = await nav.wakeLock.request('screen');
       this.wakeLock.addEventListener('release', () => {
-        // Wake lock released.
+        this.wakeLock = null;
+        // The browser releases the lock when the page is hidden. Re-acquire it
+        // when the page becomes visible again while playback is still active.
+        if (this.isPlaying && document.visibilityState === 'visible') {
+          void this.requestWakeLock();
+        }
       });
     } catch (err) {
       console.warn('Wake Lock request failed:', err);
