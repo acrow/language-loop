@@ -31,6 +31,11 @@ jobs:
         env:
           VITE_BASE: /language-loop/
 
+      # GitHub Pages has no SPA rewrite. Serving index.html as 404.html lets
+      # client-side routes (e.g. /language-loop/library) load the app on refresh.
+      - name: Add SPA fallback
+        run: cp dist/index.html dist/404.html
+
       - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3
