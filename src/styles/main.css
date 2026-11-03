@@ -1,0 +1,89 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #app {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-base-100 text-base-content antialiased;
+    font-family:
+      'Inter',
+      system-ui,
+      -apple-system,
+      'Segoe UI',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    @apply bg-primary/20;
+  }
+}
+
+@layer components {
+  /* Full-height app shell used by views. */
+  .app-shell {
+    @apply min-h-screen bg-base-100 text-base-content;
+  }
+
+  /* Standard raised surface for cards and panels. */
+  .card-surface {
+    @apply rounded-2xl border border-base-300 bg-base-200;
+  }
+
+  /* Shared focus ring used by interactive elements. */
+  .focus-ring {
+    @apply outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-base-100;
+  }
+
+  /* Thin, theme-aware scrollbar. */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(128, 128, 128, 0.4) transparent;
+  }
+
+  /* Character/token diff highlighting for test feedback. */
+  .char-correct {
+    @apply text-base-content;
+  }
+
+  .char-wrong {
+    @apply text-error;
+  }
+
+  .char-missing {
+    @apply text-success;
+  }
+}
+
+/* Slow, continuous rotation for the homepage logo. */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 20s linear infinite;
+}
+
+/* Respect reduced-motion preferences. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

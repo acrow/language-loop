@@ -1,0 +1,32 @@
+rules_version = '2';
+
+// Language Loop — Firestore security rules
+//
+// Deploy with:
+//   firebase deploy --only firestore:rules
+//
+// Each user may only read/write their own playlists under:
+//   users/{userId}/playlists/{playlistId}
+// Everything else is denied by default.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Per-user playlist documents
+    match /users/{userId}/playlists/{playlistId} {
+      allow read, write: if request.auth != null
+                         && request.auth.uid == userId;
+    }
+
+    // Per-user group documents
+    match /users/{userId}/groups/{groupId} {
+      allow read, write: if request.auth != null
+                         && request.auth.uid == userId;
+    }
+
+    // Deny everything else (including any other collections)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
