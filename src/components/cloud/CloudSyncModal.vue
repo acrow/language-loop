@@ -11,7 +11,7 @@ import { useToast } from '@/composables/useToast';
 import { useDialog } from '@/composables/useDialog';
 
 const props = defineProps<{ open: boolean }>();
-const emit = defineEmits<{ (e: 'close'): void }>();
+const emit = defineEmits<{ (e: 'close'): void; (e: 'synced'): void }>();
 
 const cloud = useCloudStore();
 const { showToast } = useToast();
@@ -115,6 +115,7 @@ async function download(docId: string): Promise<void> {
   try {
     await cloud.downloadPlaylist(docId);
     showToast(t('cloud.playlistDownloaded'));
+    emit('synced');
   } catch (e) {
     showToast(e instanceof Error ? e.message : t('cloud.downloadFailed'), 'error');
   } finally {
@@ -127,6 +128,7 @@ async function downloadGroupPlaylists(playlists: CloudPlaylistListItem[]): Promi
   try {
     for (const d of playlists) await cloud.downloadPlaylist(d.docId);
     showToast(t('cloud.groupDownloaded'));
+    emit('synced');
   } catch (e) {
     showToast(e instanceof Error ? e.message : t('cloud.downloadFailed'), 'error');
   } finally {
@@ -139,6 +141,7 @@ async function downloadAll(): Promise<void> {
   try {
     await cloud.downloadAll();
     showToast(t('cloud.allPlaylistsDownloaded'));
+    emit('synced');
   } catch (e) {
     showToast(e instanceof Error ? e.message : t('cloud.downloadFailed'), 'error');
   } finally {

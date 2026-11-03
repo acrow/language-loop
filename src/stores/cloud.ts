@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { storage, type PlaylistChangeEvent } from '@/services/storage';
 import { usePlaylistsStore } from './playlists';
+import { useGroupsStore } from './groups';
 import type { CloudGroupListItem, CloudPlaylistListItem } from '@/types/cloud';
 import type { ExportPlaylist } from '@/types/models';
 
@@ -30,6 +31,7 @@ type CloudModule = typeof import('@/services/cloud');
 
 export const useCloudStore = defineStore('cloud', () => {
   const playlistsStore = usePlaylistsStore();
+  const groupsStore = useGroupsStore();
 
   const user = ref<CloudUser | null>(null);
   const loading = ref(false);
@@ -252,6 +254,7 @@ export const useCloudStore = defineStore('cloud', () => {
       syncing.value = false;
     }
     await playlistsStore.loadPlaylists();
+    await groupsStore.loadGroups();
     await loadLocal();
   }
 
@@ -276,6 +279,7 @@ export const useCloudStore = defineStore('cloud', () => {
       syncing.value = false;
     }
     await playlistsStore.loadPlaylists();
+    await groupsStore.loadGroups();
     await loadLocal();
   }
 

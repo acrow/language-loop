@@ -347,6 +347,6 @@ async function confirmImportText(): Promise<void> {
         </BaseButton>
       </template>
     </BaseModal>
-    <CloudSyncModal :open="showCloud" @close="showCloud = false" />
+    <CloudSyncModal :open="showCloud" @close="showCloud = false" @synced="load" />
   </div>
 </template>
