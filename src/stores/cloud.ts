@@ -209,6 +209,19 @@ export const useCloudStore = defineStore('cloud', () => {
     }
   }
 
+  // Group metadata is embedded in each playlist document, so a group change
+  // is propagated by re-uploading the playlists that belong to that group.
+  async function handleGroupChange(event: { groupId: number; deleted?: boolean }): Promise<void> {
+    if (!autoSync.value || !user.value || syncing.value) return;
+    try {
+      const all = await storage.getAllPlaylists();
+      const affected = all.filter((p) => p.groupId === event.groupId);
+      for (const p of affected) scheduleSync(p.id as number);
+    } catch (e) {
+      console.error('Group auto-sync failed:', e);
+    }
+  }
+
   async function uploadAll(): Promise<void> {
     const service = await ensureService();
     const all = await storage.getAllPlaylists();
@@ -292,6 +305,9 @@ export const useCloudStore = defineStore('cloud', () => {
   // Register the auto-sync listener once and restore the saved preference.
   storage.onPlaylistChange((event) => {
     void handlePlaylistChange(event);
+  });
+  storage.onGroupChange((event) => {
+    void handleGroupChange(event);
   });
   void loadAutoSync();
 

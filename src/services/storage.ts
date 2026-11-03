@@ -18,10 +18,16 @@ export interface PlaylistChangeEvent {
   deleted?: boolean;
 }
 
+export interface GroupChangeEvent {
+  groupId: number;
+  deleted?: boolean;
+}
+
 // Typed IndexedDB storage service.
 // Ported from the legacy `js/storage.js` with the same schema and behavior.
 export class StorageService {
   private playlistChangeListeners = new Set<(event: PlaylistChangeEvent) => void>();
+  private groupChangeListeners = new Set<(event: GroupChangeEvent) => void>();
 
   generateId(): string {
     return 'playlist_' + Date.now() + '_' + Math.random().toString(36).slice(2, 11);
@@ -37,6 +43,18 @@ export class StorageService {
 
   private notifyPlaylistChange(event: PlaylistChangeEvent): void {
     this.playlistChangeListeners.forEach((listener) => listener(event));
+  }
+
+  onGroupChange(listener: (event: GroupChangeEvent) => void): void {
+    this.groupChangeListeners.add(listener);
+  }
+
+  offGroupChange(listener: (event: GroupChangeEvent) => void): void {
+    this.groupChangeListeners.delete(listener);
+  }
+
+  private notifyGroupChange(event: GroupChangeEvent): void {
+    this.groupChangeListeners.forEach((listener) => listener(event));
   }
 
   // ---------------------------------------------------------------
@@ -227,7 +245,9 @@ export class StorageService {
       collapsed: false,
       createdAt: Date.now()
     };
-    return (await db.add('groups', group)) as number;
+    const id = (await db.add('groups', group)) as number;
+    this.notifyGroupChange({ groupId: id });
+    return id;
   }
 
   async getAllGroups(): Promise<Group[]> {
@@ -247,12 +267,14 @@ export class StorageService {
 
     const updated: Group = { ...group, ...updates };
     await db.put('groups', updated);
+    this.notifyGroupChange({ groupId: id });
     return updated.id as number;
   }
 
   async deleteGroup(id: number): Promise<void> {
     const db = await getDB();
     await db.delete('groups', id);
+    this.notifyGroupChange({ groupId: id, deleted: true });
   }
 
   // ---------------------------------------------------------------
