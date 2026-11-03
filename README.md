@@ -2,86 +2,68 @@
 
 A Progressive Web App for learning foreign languages through audio repetition. Practice listening to sentences in your target language with configurable repetition and automatic text-to-speech.
 
+## Tech stack
+
+- **Vue 3** + **Vite** + **TypeScript**
+- **Pinia** for state management
+- **Vue Router** for navigation
+- **Tailwind CSS** + **DaisyUI** (6 themes)
+- **vue-i18n** (10 locales)
+- **Firebase** (Firestore + Google Auth) for cloud sync
+- **vite-plugin-pwa** for offline support
+- **Vitest** + **Vue Test Utils** for tests
+
+## Getting started
+
+```bash
+npm install
+npm run dev
+```
+
+The app runs at http://localhost:5173/.
+
+## Scripts
+
+| Command | Description |
+|---|---|
+| `npm run dev` | Start the Vite dev server |
+| `npm run build` | Type-check and build for production |
+| `npm run preview` | Preview the production build |
+| `npm run test` | Run the Vitest suite |
+| `npm run lint` | Run ESLint |
+| `npm run format` | Format with Prettier |
+
+## Project structure
+
+```
+src/
+├── components/   # UI, playlist, player, editor, test, cloud components
+├── composables/  # useAudio, useSpeech, useTheme, useDialog, useToast
+├── constants/    # Languages, defaults, theme names
+├── i18n/         # vue-i18n setup
+├── lib/          # Pure logic (unit-tested)
+├── router/       # Vue Router routes
+├── services/     # IndexedDB, audio, translation, cloud
+├── stores/       # Pinia stores
+├── styles/       # Tailwind entry
+├── types/        # TypeScript models
+└── views/        # Welcome, Library, Player, Test
+```
+
 ## Features
 
-- 🎵 **Music Player Interface** - Familiar playlist-based learning
-- 🔊 **Auto Text-to-Speech** - Automatic pronunciation in English, Chinese, and Japanese
-- 🎙️ **Custom Voice Recording** - Record your own pronunciations
-- 🔁 **Smart Repetition** - Configurable repeat count and pause duration
-- 💾 **Local Storage** - All data saved on your device
-- 📱 **Installable PWA** - Add to home screen on Android/iOS
-- 🌙 **Dark Mode** - Beautiful, modern interface
-- 📤 **Export/Import** - Share playlists as JSON files
-- ⚡ **Offline Support** - Works without internet connection
+- **Playlists** — create, edit, delete, duplicate, merge, and organize into groups
+- **Sentences** — target/native text, auto-translate, voice input, custom recording, per-sentence speed
+- **Playback** — TTS, repeat, pause, shuffle, sleep timer, wake lock
+- **Tests** — writing and speaking with CJK-aware diffing
+- **Cloud sync** — Google sign-in, upload/download/delete
+- **Themes** — 6 themes (dark, light, ocean, forest, sunset, midnight)
+- **Languages** — 10 interface languages
+- **PWA** — installable and offline-capable
 
-## Getting Started
+## Legacy
 
-1. Open `index.html` in a modern web browser (Chrome, Edge, Safari)
-2. Create your first playlist
-3. Add sentences in your target language with translations
-4. Configure repeat settings
-5. Press play and start learning!
-
-## Installation (Mobile)
-
-### Android (Chrome)
-1. Open the app in Chrome
-2. Tap the menu (⋮) → "Add to Home screen"
-3. Launch from your home screen
-
-### iOS (Safari)
-1. Open the app in Safari
-2. Tap the Share button
-3. Select "Add to Home Screen"
-
-## How to Use
-
-### Creating a Playlist
-1. Click the "+" button in the library view
-2. Enter a name for your playlist
-3. Start adding sentences
-
-### Adding Sentences
-1. Click "Add" in the player view
-2. Enter the sentence in your target language
-3. Enter the translation in your native language
-4. Select the languages
-5. Optionally record custom pronunciation
-6. Save
-
-### Playback
-- **Play/Pause**: Control playback
-- **Next/Previous**: Navigate between sentences
-- **Click sentence**: Jump to specific sentence
-- The app will repeat each sentence based on your settings, then move to the next
-
-### Settings
-- **Repeat Count**: How many times to repeat each sentence (1-10)
-- **Pause Duration**: Seconds between repetitions (0-10)
-
-### Export/Import
-- **Export**: Download playlist as JSON file (includes custom audio)
-- **Import**: Upload JSON file to restore playlist
-
-## Technical Details
-
-- **Storage**: IndexedDB for local data persistence
-- **Audio**: Web Speech API for TTS, MediaRecorder for custom audio
-- **Offline**: Service Worker for offline functionality
-- **Languages**: English (en-US), Chinese (zh-CN), Japanese (ja-JP)
-
-## Browser Compatibility
-
-Works best on:
-- Chrome/Edge (desktop & mobile)
-- Safari (iOS & macOS)
-- Firefox (desktop & mobile)
-
-**Note**: Voice quality depends on your browser and operating system. Chrome/Edge generally have the best TTS support.
-
-## Privacy
-
-All data is stored locally on your device. No data is sent to any server. Your playlists and recordings stay private.
+The original vanilla-JS app is preserved in [`legacy/`](legacy/) for reference.
 
 ## License
 
