@@ -4,6 +4,8 @@ import vue from '@vitejs/plugin-vue';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
+  // GitHub Pages project sites are served from /<repo>/. Set VITE_BASE in CI.
+  base: process.env.VITE_BASE || '/',
   plugins: [
     vue(),
     VitePWA({
