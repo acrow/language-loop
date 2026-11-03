@@ -236,11 +236,18 @@ export class AudioEngine {
 
   async jumpToSentence(index: number, isJump = true): Promise<void> {
     if (this.currentIndex === index) {
-      if (this.isPaused) {
-        await this.play();
-      } else {
-        this.pause();
+      if (isJump) {
+        if (this.isPaused) {
+          await this.play();
+        } else {
+          this.pause();
+        }
+        return;
       }
+      // Automatic advance to the same index (e.g. a single enabled sentence):
+      // replay it so playback keeps looping.
+      this.currentRepeat = 0;
+      await this.playCurrentSentence();
       return;
     }
 

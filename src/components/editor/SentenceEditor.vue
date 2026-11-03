@@ -158,6 +158,7 @@ async function save(): Promise<void> {
   <BaseModal
     :open="open"
     :title="sentence ? $t('sentence.editSentence') : $t('sentence.addSentence')"
+    :close-on-backdrop="false"
     @close="emit('close')"
   >
     <div class="space-y-4">

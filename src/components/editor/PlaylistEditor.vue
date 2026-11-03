@@ -110,7 +110,12 @@ async function save(): Promise<void> {
 </script>
 
 <template>
-  <BaseModal :open="open" :title="$t('playlist.editPlaylist')" @close="emit('close')">
+  <BaseModal
+    :open="open"
+    :title="$t('playlist.editPlaylist')"
+    :close-on-backdrop="false"
+    @close="emit('close')"
+  >
     <div class="space-y-4">
       <BaseInput
         v-model="name"
