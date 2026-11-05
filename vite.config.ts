@@ -6,6 +6,11 @@ import { VitePWA } from 'vite-plugin-pwa';
 export default defineConfig({
   // GitHub Pages project sites are served from /<repo>/. Set VITE_BASE in CI.
   base: process.env.VITE_BASE || '/',
+  build: {
+    // Always start from a clean dist so stale hashed chunks are not precached
+    // by the service worker (which would bloat the cache and delay updates).
+    emptyOutDir: true
+  },
   plugins: [
     vue(),
     VitePWA({
@@ -26,13 +31,13 @@ export default defineConfig({
             src: 'assets/icons/icon-192.png',
             sizes: '192x192',
             type: 'image/png',
-            purpose: 'any maskable'
+            purpose: 'any'
           },
           {
             src: 'assets/icons/icon-512.png',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'any maskable'
+            purpose: 'any'
           }
         ]
       },

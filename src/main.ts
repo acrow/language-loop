@@ -6,6 +6,18 @@ import { i18n, initI18n } from './i18n';
 import { storage } from './services/storage';
 import './styles/main.css';
 
+// When a new service worker takes control, reload once so the app runs the
+// freshly deployed bundle instead of the previously cached one. The guard on
+// `controller` avoids reloading on the very first install.
+if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (refreshing) return;
+    refreshing = true;
+    window.location.reload();
+  });
+}
+
 async function bootstrap(): Promise<void> {
   const app = createApp(App);
 

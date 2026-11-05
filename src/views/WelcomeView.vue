@@ -14,6 +14,10 @@ const settings = useSettingsStore();
 const showTheme = ref(false);
 const languageOptions = LANGUAGES.map((l) => ({ value: l.code, label: l.name }));
 
+// Resolve against the configured base so the logo also loads when the app is
+// served from a subpath (e.g. GitHub Pages /language-loop/).
+const logoUrl = `${import.meta.env.BASE_URL}assets/icons/icon-192.png`;
+
 onMounted(async () => {
   await settings.loadSettings();
 });
@@ -28,7 +32,7 @@ function getStarted(): void {
     <div class="w-full max-w-md text-center">
       <div class="mx-auto mb-4 flex justify-center">
         <img
-          src="/assets/icons/icon-192.png"
+          :src="logoUrl"
           alt="Language Loop Logo"
           class="h-24 w-24 rounded-2xl animate-spin-slow"
         />
