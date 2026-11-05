@@ -154,8 +154,27 @@ export const useCloudStore = defineStore('cloud', () => {
     await loadCloud();
   }
 
-  async function loadAutoSync(): Promise<void> {
-    autoSync.value = (await storage.getSetting<boolean>('cloudAutoSync', false)) ?? false;
+  let autoSyncLoaded: Promise<void> | null = null;
+
+  function loadAutoSync(): Promise<void> {
+    if (!autoSyncLoaded) {
+      autoSyncLoaded = (async () => {
+        autoSync.value = (await storage.getSetting<boolean>('cloudAutoSync', false)) ?? false;
+      })();
+    }
+    return autoSyncLoaded;
+  }
+
+  // Called once at app startup. Restores the auto-sync preference and, only
+  // when auto-sync is enabled, initializes Firebase so the auth session is
+  // restored and change listeners can upload. Users who never enabled cloud
+  // sync (including users who are not signed in) never load Firebase here;
+  // the cloud service is still loaded lazily when the cloud modal is opened.
+  async function init(): Promise<void> {
+    await loadAutoSync();
+    if (autoSync.value) {
+      await ensureService();
+    }
   }
 
   async function setAutoSync(enabled: boolean): Promise<void> {
@@ -164,16 +183,27 @@ export const useCloudStore = defineStore('cloud', () => {
   }
 
   function scheduleSync(playlistId: number): void {
-    if (!autoSync.value || !user.value || syncing.value) return;
+    if (!autoSync.value || !user.value) return;
     pendingSync.add(playlistId);
     if (syncTimer) clearTimeout(syncTimer);
     syncTimer = setTimeout(() => {
+      syncTimer = null;
       void flushSync();
     }, 1000);
   }
 
   async function flushSync(): Promise<void> {
-    if (syncing.value || !autoSync.value || !user.value) return;
+    if (!autoSync.value || !user.value) return;
+    // If a sync is already running, reschedule so queued changes aren't lost.
+    if (syncing.value) {
+      if (!syncTimer) {
+        syncTimer = setTimeout(() => {
+          syncTimer = null;
+          void flushSync();
+        }, 1000);
+      }
+      return;
+    }
     syncing.value = true;
     try {
       const ids = [...pendingSync];
@@ -188,11 +218,18 @@ export const useCloudStore = defineStore('cloud', () => {
       console.error('Auto-sync failed:', e);
     } finally {
       syncing.value = false;
+      // Flush any changes that arrived while the sync was in progress.
+      if (pendingSync.size > 0 && !syncTimer) {
+        syncTimer = setTimeout(() => {
+          syncTimer = null;
+          void flushSync();
+        }, 1000);
+      }
     }
   }
 
   async function handlePlaylistChange(event: PlaylistChangeEvent): Promise<void> {
-    if (!autoSync.value || !user.value || syncing.value) return;
+    if (!autoSync.value || !user.value) return;
 
     try {
       if (event.deleted) {
@@ -212,7 +249,7 @@ export const useCloudStore = defineStore('cloud', () => {
   // Group metadata is embedded in each playlist document, so a group change
   // is propagated by re-uploading the playlists that belong to that group.
   async function handleGroupChange(event: { groupId: number; deleted?: boolean }): Promise<void> {
-    if (!autoSync.value || !user.value || syncing.value) return;
+    if (!autoSync.value || !user.value) return;
     try {
       const all = await storage.getAllPlaylists();
       const affected = all.filter((p) => p.groupId === event.groupId);
@@ -321,6 +358,7 @@ export const useCloudStore = defineStore('cloud', () => {
     localGroups,
     autoSync,
     syncing,
+    init,
     ensureService,
     setAutoSync,
     signIn,
