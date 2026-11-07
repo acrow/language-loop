@@ -46,9 +46,19 @@ export class CloudService {
   currentUser: User | null = null;
   ready = false;
 
+  // Resolves with the first auth state reported by Firebase (the restored
+  // session or `null` when signed out). Used to wait for auth before pulling
+  // cloud data at startup.
+  authReady: Promise<User | null>;
+  private resolveAuthReady!: (user: User | null) => void;
+
   private authChangeCallbacks: ((user: User | null) => void)[] = [];
 
   constructor() {
+    this.authReady = new Promise((resolve) => {
+      this.resolveAuthReady = resolve;
+    });
+
     try {
       this.app = initializeApp(firebaseConfig);
       this.db = getFirestore(this.app);
@@ -56,6 +66,7 @@ export class CloudService {
 
       onAuthStateChanged(this.auth, (user) => {
         this.currentUser = user;
+        this.resolveAuthReady(user);
         this.authChangeCallbacks.forEach((cb) => cb(user));
       });
 
@@ -63,6 +74,7 @@ export class CloudService {
     } catch (e) {
       console.error('CloudService init failed:', e);
       this.ready = false;
+      this.resolveAuthReady(null);
     }
   }
 
